@@ -12,7 +12,7 @@ import {
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { Word } from '../types/word'
 import { db } from '../utils/db'
 
@@ -22,6 +22,8 @@ export const ListPage = () => {
     const [showNativeNotification, setShowNativeNotification] = useState(false)
     const [showTranslationNotification, setShowTranslationNotification] =
         useState(false)
+
+    const nativeRef = useRef<HTMLInputElement>(null)
 
     const words = useLiveQuery(() => db.words.toArray())
 
@@ -42,6 +44,18 @@ export const ListPage = () => {
         setNative('')
         setTranslation('')
     }, [native, translation])
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                nativeRef.current?.click()
+                add()
+            }
+        }
+
+        document.addEventListener('keypress', handler)
+        return () => document.removeEventListener('keypress', handler)
+    }, [add, nativeRef])
 
     return (
         <>
@@ -70,6 +84,7 @@ export const ListPage = () => {
                             <TableCell>
                                 <Input
                                     value={native}
+                                    ref={nativeRef}
                                     onChange={(e) => setNative(e.target.value)}
                                     placeholder="Native..."
                                 ></Input>
