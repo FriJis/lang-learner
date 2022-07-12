@@ -2,12 +2,13 @@ import { Button, Card, CardActions, CardContent, Dialog, DialogTitle, Grid, Typo
 import _ from "lodash"
 import { useCallback, useEffect, useState } from "react"
 import { config } from "../conf"
+import { Word } from "../types/word"
 import { getRandomValueFromArray } from "../utils"
 import { db } from "../utils/db"
 
 export const LearnPage = () => {
     const [native, setNative] = useState('')
-    const [mistake, setMistake] = useState<string | null>(null)
+    const [mistake, setMistake] = useState<Word | null>(null)
 
     const [translations, setTranslations] = useState<string[]>([])
 
@@ -31,7 +32,7 @@ export const LearnPage = () => {
         if (word.translation === translation) {
             await db.words.update(word.id || 0, { progress: word.progress + config.successPlus })
         } else {
-            setMistake(word.translation)
+            setMistake(word)
             await db.words.update(word.id || 0, { progress: word.progress / config.mistakeOffset })
         }
 
@@ -53,7 +54,7 @@ export const LearnPage = () => {
     return (
         <>
             <Dialog onClose={() => setMistake(null)} open={!!mistake}>
-                <DialogTitle>{mistake}</DialogTitle>
+                <DialogTitle>{mistake?.native} - {mistake?.translation}</DialogTitle>
             </Dialog>
             <Card>
                 <CardContent>

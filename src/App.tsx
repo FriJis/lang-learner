@@ -1,13 +1,15 @@
 
 import { Container, Tab, Tabs } from "@mui/material";
-import {  useState } from "react";
+import { useState } from "react";
 import { LearnPage } from "./pages/learn";
 import { ListPage } from "./pages/list";
+import { ParsingPage } from "./pages/parsing";
 
 
 enum Pages {
   list = 'list',
-  learn = 'learn'
+  learn = 'learn',
+  parsing = 'parsing'
 }
 
 function App() {
@@ -15,13 +17,15 @@ function App() {
 
   return (
     <Container>
-        <Tabs value={page} onChange={(e, v) => setPage(v)}>
+      <Tabs value={page} onChange={(e, v) => setPage(v)}>
         <Tab label="List" value={Pages.list}></Tab>
         <Tab label="Learn" value={Pages.learn}></Tab>
+        <Tab label="Parsing" value={Pages.parsing}></Tab>
       </Tabs>
 
       {page === Pages.list && <ListPage></ListPage>}
       {page === Pages.learn && <LearnPage></LearnPage>}
+      {page === Pages.parsing && <ParsingPage></ParsingPage>}
     </Container>
   );
 }

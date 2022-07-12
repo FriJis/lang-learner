@@ -18,12 +18,12 @@ export const ListPage = () => {
         if (!native || !translation) return
         const words = await db.words.toArray()
 
-        if(words.find(w => w.native === native)) return setShowNativeNotification(true)
-        if(words.find(w => w.translation === translation)) return setShowTranslationNotification(true)
+        if(words.find(w => w.native.trim() === native.trim())) return setShowNativeNotification(true)
+        if(words.find(w => w.translation.trim() === translation.trim())) return setShowTranslationNotification(true)
 
         await db.words.add({
-            native,
-            translation,
+            native: native.trim(),
+            translation: translation.trim(),
             progress: 0
         })
         setNative('')
@@ -52,7 +52,7 @@ export const ListPage = () => {
                             </TableCell>
                             <TableCell></TableCell>
                             <TableCell>
-                                <Button onClick={add} fullWidth color="success">save</Button>
+                                <Button onClick={add} fullWidth color="success" variant="contained">Add</Button>
                             </TableCell>
                         </TableRow>
                         {words?.map(word => <WordItem word={word} key={word.id}></WordItem>)}
@@ -73,7 +73,7 @@ const WordItem: FC<{ word: Word }> = ({ word }) => {
         <TableRow key={word.id}>
             <TableCell>{word.native}</TableCell>
             <TableCell>{word.translation}</TableCell>
-            <TableCell>
+            <TableCell style={{width: 300}}>
                 <Slider max={1} step={0.01} value={newProgress} onChange={(e, v) => setNewProgress(_.isArray(v) ? v[0] : v)} onChangeCommitted={updateProgress}></Slider>
             </TableCell>
             <TableCell><Button onClick={del} fullWidth color="error">X</Button></TableCell>
