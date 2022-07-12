@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import _ from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
-import { config } from '../conf'
+import useLocalStorageState from 'use-local-storage-state'
 import { Word } from '../types/word'
 import { getRandomValueFromArray } from '../utils'
 import { db } from '../utils/db'
@@ -21,12 +21,22 @@ export const LearnPage = () => {
 
     const [translations, setTranslations] = useState<string[]>([])
 
+    const [countWords] = useLocalStorageState('count_words', {
+        defaultValue: 5,
+    })
+    const [successOffset] = useLocalStorageState('success_offset', {
+        defaultValue: 0.05,
+    })
+    const [mistakeOffset] = useLocalStorageState('mistake_offset', {
+        defaultValue: 0.5,
+    })
+
     const generate = useCallback(async () => {
         const words = await db.words.toArray()
         const preparedWords = _.slice(
             _.shuffle(words.filter((w) => w.progress < 1)),
             0,
-            config.maxWords
+            countWords
         )
         const randomWord = getRandomValueFromArray(preparedWords)
 
@@ -34,7 +44,7 @@ export const LearnPage = () => {
 
         setNative(randomWord.native)
         setTranslations(preparedWords.map((w) => w.translation))
-    }, [])
+    }, [countWords])
 
     const compare = useCallback(
         async (translation?: string) => {
@@ -45,18 +55,18 @@ export const LearnPage = () => {
 
             if (word.translation === translation) {
                 await db.words.update(word.id || 0, {
-                    progress: word.progress + config.successPlus,
+                    progress: word.progress + successOffset,
                 })
             } else {
                 setMistake(word)
                 await db.words.update(word.id || 0, {
-                    progress: word.progress / config.mistakeOffset,
+                    progress: word.progress * mistakeOffset,
                 })
             }
 
             generate()
         },
-        [native, generate]
+        [native, generate, successOffset, mistakeOffset]
     )
 
     useEffect(() => {
