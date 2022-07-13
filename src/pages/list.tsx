@@ -1,5 +1,6 @@
 import {
     Button,
+    IconButton,
     Input,
     Slider,
     Snackbar,
@@ -45,6 +46,15 @@ export const ListPage = () => {
         setTranslation('')
     }, [native, translation])
 
+    const changeSides = useCallback(() => {
+        words?.forEach((word) => {
+            db.words.update(word, {
+                native: word.translation,
+                translation: word.native,
+            })
+        })
+    }, [words])
+
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             if (e.key === 'Enter') {
@@ -75,9 +85,17 @@ export const ListPage = () => {
             <TableContainer>
                 <Table>
                     <TableHead>
-                        <TableCell>Native</TableCell>
-                        <TableCell>Translation</TableCell>
-                        <TableCell colSpan={2}>Progress</TableCell>
+                        <TableRow>
+                            <TableCell>Native </TableCell>
+                            <TableCell width={50}>
+                                <IconButton onClick={changeSides}>
+                                    <i className="fa-solid fa-arrow-right-arrow-left"></i>
+                                </IconButton>
+                            </TableCell>
+                            <TableCell>Translation</TableCell>
+                            <TableCell width={300}>Progress</TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
                     </TableHead>
                     <TableBody>
                         <TableRow>
@@ -89,6 +107,7 @@ export const ListPage = () => {
                                     placeholder="Native..."
                                 ></Input>
                             </TableCell>
+                            <TableCell></TableCell>
                             <TableCell>
                                 <Input
                                     value={translation}
@@ -129,11 +148,23 @@ const WordItem: FC<{ word: Word }> = ({ word }) => {
         [newProgress, word.id]
     )
 
+    const changeSides = useCallback(() => {
+        db.words.update(word, {
+            native: word.translation,
+            translation: word.native,
+        })
+    }, [word])
+
     return (
         <TableRow key={word.id}>
             <TableCell>{word.native}</TableCell>
+            <TableCell>
+                <IconButton onClick={changeSides}>
+                    <i className="fa-solid fa-arrow-right-arrow-left"></i>
+                </IconButton>
+            </TableCell>
             <TableCell>{word.translation}</TableCell>
-            <TableCell style={{ width: 300 }}>
+            <TableCell>
                 <Slider
                     max={1}
                     step={0.01}
@@ -144,7 +175,7 @@ const WordItem: FC<{ word: Word }> = ({ word }) => {
             </TableCell>
             <TableCell>
                 <Button onClick={del} fullWidth color="error">
-                    X
+                    <i className="fa-solid fa-trash"></i>
                 </Button>
             </TableCell>
         </TableRow>
