@@ -1,5 +1,7 @@
 import {
+    Backdrop,
     Button,
+    CircularProgress,
     IconButton,
     Input,
     Slider,
@@ -24,6 +26,8 @@ export const ListPage = () => {
     const [showTranslationNotification, setShowTranslationNotification] =
         useState(false)
 
+    const [showBackdrop, setShowBackdrop] = useState(false)
+
     const nativeRef = useRef<HTMLInputElement>(null)
 
     const words = useLiveQuery(() => db.words.toArray())
@@ -46,13 +50,22 @@ export const ListPage = () => {
         setTranslation('')
     }, [native, translation])
 
-    const changeSides = useCallback(() => {
-        words?.forEach((word) => {
-            db.words.update(word, {
-                native: word.translation,
-                translation: word.native,
-            })
-        })
+    const changeSides = useCallback(async () => {
+        if (!words) return
+        setShowBackdrop(true)
+        try {
+            await Promise.all(
+                words.map((word) =>
+                    db.words.update(word, {
+                        native: word.translation,
+                        translation: word.native,
+                    })
+                )
+            )
+        } catch (error) {
+            console.error(error)
+        }
+        setShowBackdrop(false)
     }, [words])
 
     useEffect(() => {
@@ -69,6 +82,9 @@ export const ListPage = () => {
 
     return (
         <>
+            <Backdrop open={showBackdrop}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <Snackbar
                 open={showNativeNotification}
                 onClose={() => setShowNativeNotification(false)}
