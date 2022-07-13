@@ -43,8 +43,8 @@ export const ParsingPage = () => {
                         return db.words.update(exTranslation, { native })
 
                     return db.words.add({
-                        translation: translation.trim(),
-                        native: native.trim(),
+                        translation: translation.trim().toLowerCase(),
+                        native: native.trim().toLowerCase(),
                         progress: 0,
                     })
                 })

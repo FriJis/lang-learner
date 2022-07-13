@@ -42,8 +42,8 @@ export const ListPage = () => {
             return setShowTranslationNotification(true)
 
         await db.words.add({
-            native: native.trim(),
-            translation: translation.trim(),
+            native: native.trim().toLowerCase(),
+            translation: translation.trim().toLowerCase(),
             progress: 0,
         })
         setNative('')
@@ -57,8 +57,8 @@ export const ListPage = () => {
             await Promise.all(
                 words.map((word) =>
                     db.words.update(word, {
-                        native: word.translation,
-                        translation: word.native,
+                        native: word.translation.trim().toLowerCase(),
+                        translation: word.native.trim().toLowerCase(),
                     })
                 )
             )
@@ -166,20 +166,34 @@ const WordItem: FC<{ word: Word }> = ({ word }) => {
 
     const changeSides = useCallback(() => {
         db.words.update(word, {
-            native: word.translation,
-            translation: word.native,
+            native: word.translation.trim().toLowerCase(),
+            translation: word.native.trim().toLowerCase(),
         })
     }, [word])
 
     return (
         <TableRow key={word.id}>
-            <TableCell>{word.native}</TableCell>
+            <TableCell>
+                <Input
+                    value={word.native}
+                    onChange={(e) =>
+                        db.words.update(word, { native: e.target.value })
+                    }
+                ></Input>
+            </TableCell>
             <TableCell>
                 <IconButton onClick={changeSides}>
                     <i className="fa-solid fa-arrow-right-arrow-left"></i>
                 </IconButton>
             </TableCell>
-            <TableCell>{word.translation}</TableCell>
+            <TableCell>
+                <Input
+                    value={word.translation}
+                    onChange={(e) =>
+                        db.words.update(word, { translation: e.target.value })
+                    }
+                ></Input>
+            </TableCell>
             <TableCell>
                 <Slider
                     max={1}
