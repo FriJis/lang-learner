@@ -11,8 +11,9 @@ import {
 import _ from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
+import { lsConf } from '../conf'
 import { Word } from '../types/word'
-import { getRandomValueFromArray } from '../utils'
+import { getRandomValueFromArray, say } from '../utils'
 import { db } from '../utils/db'
 
 export const LearnPage = () => {
@@ -21,14 +22,24 @@ export const LearnPage = () => {
 
     const [translations, setTranslations] = useState<string[]>([])
 
-    const [countWords] = useLocalStorageState('count_words', {
-        defaultValue: 5,
+    const [countWords] = useLocalStorageState(lsConf.count_words.name, {
+        defaultValue: lsConf.count_words.def,
     })
-    const [successOffset] = useLocalStorageState('success_offset', {
-        defaultValue: 0.05,
+    const [successOffset] = useLocalStorageState(lsConf.success_offset.name, {
+        defaultValue: lsConf.success_offset.def,
     })
-    const [mistakeOffset] = useLocalStorageState('mistake_offset', {
-        defaultValue: 0.5,
+    const [mistakeOffset] = useLocalStorageState(lsConf.mistake_offset.name, {
+        defaultValue: lsConf.mistake_offset.def,
+    })
+
+    const [translationLang] = useLocalStorageState(
+        lsConf.translationLang.name,
+        {
+            defaultValue: lsConf.translationLang.def,
+        }
+    )
+    const [nativeLang] = useLocalStorageState(lsConf.nativeLang.name, {
+        defaultValue: lsConf.nativeLang.def,
     })
 
     const generate = useCallback(async () => {
@@ -91,7 +102,13 @@ export const LearnPage = () => {
             </Dialog>
             <Card>
                 <CardContent>
-                    <Typography align="center">{native}</Typography>
+                    <Typography
+                        align="center"
+                        onMouseEnter={() => say(native, nativeLang)}
+                        onMouseLeave={() => window.speechSynthesis.cancel()}
+                    >
+                        {native}
+                    </Typography>
                 </CardContent>
                 <CardActions>
                     <Grid container justifyContent="center">
@@ -100,6 +117,10 @@ export const LearnPage = () => {
                                 <Button
                                     color="success"
                                     onClick={() => compare(t)}
+                                    onMouseEnter={() => say(t, translationLang)}
+                                    onMouseLeave={() =>
+                                        window.speechSynthesis.cancel()
+                                    }
                                 >
                                     {t}
                                 </Button>

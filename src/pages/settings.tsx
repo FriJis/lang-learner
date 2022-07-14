@@ -1,21 +1,46 @@
-import { Card, CardContent, Slider, Typography } from '@mui/material'
+import {
+    Card,
+    CardContent,
+    Grid,
+    MenuItem,
+    Select,
+    Slider,
+    Typography,
+} from '@mui/material'
 import _ from 'lodash'
 import useLocalStorageState from 'use-local-storage-state'
+import { langs, lsConf } from '../conf'
 
 export const SettingsPage = () => {
-    const [countWords, setCountWords] = useLocalStorageState('count_words', {
-        defaultValue: 5,
-    })
-    const [successOffset, setSuccessOffset] = useLocalStorageState(
-        'success_offset',
+    const [countWords, setCountWords] = useLocalStorageState(
+        lsConf.count_words.name,
         {
-            defaultValue: 0.05,
+            defaultValue: lsConf.count_words.def,
+        }
+    )
+    const [successOffset, setSuccessOffset] = useLocalStorageState(
+        lsConf.success_offset.name,
+        {
+            defaultValue: lsConf.success_offset.def,
         }
     )
     const [mistakeOffset, setMistakeOffset] = useLocalStorageState(
-        'mistake_offset',
+        lsConf.mistake_offset.name,
         {
-            defaultValue: 0.5,
+            defaultValue: lsConf.mistake_offset.def,
+        }
+    )
+
+    const [nativeLang, setNativeLang] = useLocalStorageState(
+        lsConf.nativeLang.name,
+        {
+            defaultValue: lsConf.nativeLang.def,
+        }
+    )
+    const [translationLang, setTranslationLang] = useLocalStorageState(
+        lsConf.translationLang.name,
+        {
+            defaultValue: lsConf.translationLang.def,
         }
     )
 
@@ -49,6 +74,37 @@ export const SettingsPage = () => {
                         setMistakeOffset(_.isArray(v) ? v[0] : v)
                     }
                 ></Slider>
+                <Grid container>
+                    <Grid item xl={6}>
+                        <Typography>Native language</Typography>
+
+                        <Select
+                            value={nativeLang}
+                            onChange={(e) => setNativeLang(e.target.value)}
+                            fullWidth
+                        >
+                            {langs.map((l) => (
+                                <MenuItem value={l} key={l}>
+                                    {l}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </Grid>
+                    <Grid item xl={6}>
+                        <Typography>Translation language</Typography>
+                        <Select
+                            value={translationLang}
+                            onChange={(e) => setTranslationLang(e.target.value)}
+                            fullWidth
+                        >
+                            {langs.map((l) => (
+                                <MenuItem value={l} key={l}>
+                                    {l}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </Grid>
+                </Grid>
             </CardContent>
         </Card>
     )

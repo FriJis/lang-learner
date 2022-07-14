@@ -14,3 +14,10 @@ export async function asyncMap<T, S>(
     }
     return results
 }
+
+export function say(text: string, lang?: string) {
+    const message = new SpeechSynthesisUtterance()
+    message.lang = lang || 'en-EN'
+    message.text = text
+    window.speechSynthesis.speak(message)
+}
