@@ -15,11 +15,11 @@ import {
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
 import { lsConf } from '../conf'
 import { Word } from '../types/word'
-import { normalize } from '../utils'
+import { normalize, regCheck } from '../utils'
 import { db } from '../utils/db'
 import { swapWord } from '../utils/db'
 
@@ -48,6 +48,16 @@ export const ListPage = () => {
     const nativeRef = useRef<HTMLInputElement>(null)
 
     const words = useLiveQuery(() => db.words.toArray())
+
+    const filteredWords = useMemo(
+        () =>
+            words?.filter(
+                (w) =>
+                    regCheck(w.native, native) &&
+                    regCheck(w.translation, translation)
+            ),
+        [native, words, translation]
+    )
 
     const add = useCallback(async () => {
         if (!native || !translation) return
@@ -162,7 +172,7 @@ export const ListPage = () => {
                                 </Button>
                             </TableCell>
                         </TableRow>
-                        {words?.map((word) => (
+                        {filteredWords?.map((word) => (
                             <WordItem word={word} key={word.id}></WordItem>
                         ))}
                     </TableBody>

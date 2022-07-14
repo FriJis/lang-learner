@@ -23,3 +23,6 @@ export function say(text: string, lang?: string) {
 }
 
 export const normalize = (text: string) => text.trim().toLocaleLowerCase()
+
+export const regCheck = (text: string, toCheck: string) =>
+    !!text.match(new RegExp(toCheck, 'gim'))
