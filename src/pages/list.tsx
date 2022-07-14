@@ -60,9 +60,8 @@ export const ListPage = () => {
 
     const add = useCallback(async () => {
         if (!native || !translation) return
-        const words = await db.words.toArray()
 
-        if (words.length > 0) return setShowNotification(true)
+        if (!!filteredWords?.length) return setShowNotification(true)
 
         await db.words.add({
             native: normalize(native),
@@ -71,7 +70,7 @@ export const ListPage = () => {
         })
         setNative('')
         setTranslation('')
-    }, [native, translation])
+    }, [native, translation, filteredWords])
 
     const changeSides = useCallback(async () => {
         if (!words) return
