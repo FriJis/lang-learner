@@ -21,3 +21,5 @@ export function say(text: string, lang?: string) {
     message.text = text
     window.speechSynthesis.speak(message)
 }
+
+export const normalize = (text: string) => text.trim().toLocaleLowerCase()

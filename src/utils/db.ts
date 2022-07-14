@@ -1,4 +1,5 @@
 import Dexie, { Table } from 'dexie'
+import { normalize } from '.'
 import { Word } from '../types/word'
 
 export class MySubClassedDexie extends Dexie {
@@ -13,3 +14,10 @@ export class MySubClassedDexie extends Dexie {
 }
 
 export const db = new MySubClassedDexie()
+
+export function swapWord(word: Word) {
+    return db.words.update(word, {
+        native: normalize(word.translation),
+        translation: normalize(word.native),
+    })
+}

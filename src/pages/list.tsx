@@ -16,8 +16,12 @@ import {
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import useLocalStorageState from 'use-local-storage-state'
+import { lsConf } from '../conf'
 import { Word } from '../types/word'
+import { normalize } from '../utils'
 import { db } from '../utils/db'
+import { swapWord } from '../utils/db'
 
 export const ListPage = () => {
     const [native, setNative] = useState('')
@@ -28,6 +32,19 @@ export const ListPage = () => {
 
     const [showBackdrop, setShowBackdrop] = useState(false)
 
+    const [translationLang, setTranslationLang] = useLocalStorageState(
+        lsConf.translationLang.name,
+        {
+            defaultValue: lsConf.translationLang.def,
+        }
+    )
+    const [nativeLang, setNativeLang] = useLocalStorageState(
+        lsConf.nativeLang.name,
+        {
+            defaultValue: lsConf.nativeLang.def,
+        }
+    )
+
     const nativeRef = useRef<HTMLInputElement>(null)
 
     const words = useLiveQuery(() => db.words.toArray())
@@ -36,14 +53,18 @@ export const ListPage = () => {
         if (!native || !translation) return
         const words = await db.words.toArray()
 
-        if (words.find((w) => w.native.trim() === native.trim()))
+        if (words.find((w) => normalize(w.native) === normalize(native)))
             return setShowNativeNotification(true)
-        if (words.find((w) => w.translation.trim() === translation.trim()))
+        if (
+            words.find(
+                (w) => normalize(w.translation) === normalize(translation)
+            )
+        )
             return setShowTranslationNotification(true)
 
         await db.words.add({
-            native: native.trim().toLowerCase(),
-            translation: translation.trim().toLowerCase(),
+            native: normalize(native),
+            translation: normalize(translation),
             progress: 0,
         })
         setNative('')
@@ -54,19 +75,15 @@ export const ListPage = () => {
         if (!words) return
         setShowBackdrop(true)
         try {
-            await Promise.all(
-                words.map((word) =>
-                    db.words.update(word, {
-                        native: word.translation.trim().toLowerCase(),
-                        translation: word.native.trim().toLowerCase(),
-                    })
-                )
-            )
+            await Promise.all(words.map((word) => swapWord(word)))
+            const oldNativeLang = nativeLang
+            setNativeLang(translationLang)
+            setTranslationLang(oldNativeLang)
         } catch (error) {
             console.error(error)
         }
         setShowBackdrop(false)
-    }, [words])
+    }, [words, translationLang, nativeLang, setNativeLang, setTranslationLang])
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
@@ -165,10 +182,7 @@ const WordItem: FC<{ word: Word }> = ({ word }) => {
     )
 
     const changeSides = useCallback(() => {
-        db.words.update(word, {
-            native: word.translation.trim().toLowerCase(),
-            translation: word.native.trim().toLowerCase(),
-        })
+        swapWord(word)
     }, [word])
 
     return (
