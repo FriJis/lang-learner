@@ -26,9 +26,8 @@ import { swapWord } from '../utils/db'
 export const ListPage = () => {
     const [native, setNative] = useState('')
     const [translation, setTranslation] = useState('')
-    const [showNativeNotification, setShowNativeNotification] = useState(false)
-    const [showTranslationNotification, setShowTranslationNotification] =
-        useState(false)
+
+    const [showNotification, setShowNotification] = useState(false)
 
     const [showBackdrop, setShowBackdrop] = useState(false)
 
@@ -63,14 +62,7 @@ export const ListPage = () => {
         if (!native || !translation) return
         const words = await db.words.toArray()
 
-        if (words.find((w) => normalize(w.native) === normalize(native)))
-            return setShowNativeNotification(true)
-        if (
-            words.find(
-                (w) => normalize(w.translation) === normalize(translation)
-            )
-        )
-            return setShowTranslationNotification(true)
+        if (words.length > 0) return setShowNotification(true)
 
         await db.words.add({
             native: normalize(native),
@@ -113,15 +105,9 @@ export const ListPage = () => {
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Snackbar
-                open={showNativeNotification}
-                onClose={() => setShowNativeNotification(false)}
-                message='"Native" field has already existed'
-                autoHideDuration={1000}
-            ></Snackbar>
-            <Snackbar
-                open={showTranslationNotification}
-                onClose={() => setShowTranslationNotification(false)}
-                message='"Translation" field has already existed'
+                open={showNotification}
+                onClose={() => setShowNotification(false)}
+                message="It has already existed"
                 autoHideDuration={1000}
             ></Snackbar>
 
