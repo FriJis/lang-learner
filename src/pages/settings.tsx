@@ -130,6 +130,13 @@ export const SettingsPage = () => {
                         }
                     ></Slider>
                     <Typography>Success offset: {successOffset}</Typography>
+                    <Typography>
+                        Feature progress = current progress (0.5) +{' '}
+                        {successOffset} ={' '}
+                        {0.5 + successOffset > 1
+                            ? 1
+                            : _.round(0.5 + successOffset, 2)}
+                    </Typography>
                     <Slider
                         min={0}
                         max={1}
@@ -140,6 +147,10 @@ export const SettingsPage = () => {
                         }
                     ></Slider>
                     <Typography>Mistake offset: {mistakeOffset}</Typography>
+                    <Typography>
+                        Feature progress = current progress (0.5) *{' '}
+                        {mistakeOffset} = {_.round(0.5 * mistakeOffset, 2)}
+                    </Typography>
                     <Slider
                         min={0}
                         max={1}
