@@ -24,10 +24,40 @@ export function say(text: string, lang?: string) {
 
 export const normalize = (text: string) => text.trim().toLocaleLowerCase()
 
+export function download(text: string, name: string, type: string) {
+    const a = document.createElement('a')
+    const file = new Blob([text], { type })
+    a.href = URL.createObjectURL(file)
+    a.download = name
+    a.click()
+    a.remove()
+}
+
+export function readTextFromFile(file: File) {
+    return new Promise<string>((res, rej) => {
+        const reader = new FileReader()
+
+        reader.readAsText(file)
+        reader.onload = () =>
+            res(_.isString(reader.result) ? reader.result : '')
+        reader.onerror = (e) => rej(e)
+    })
+}
+
+export function jsonParse<T>(val: string): T | null {
+    try {
+        return JSON.parse(val)
+    } catch (error) {
+        console.error(error)
+        return null
+    }
+}
+
 export const regCheck = (text: string, toCheck: string) =>
     !!text.match(
         new RegExp(
             toCheck.replace(
+                // eslint-disable-next-line
                 /\(|\)|\[|\\|\]|\/|\?|\=|\+|\=|\||\.|\,|\!|\@|\#/g,
                 ''
             ),

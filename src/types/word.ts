@@ -4,3 +4,9 @@ export interface Word {
     translation: string
     progress: number
 }
+
+type native = string
+type translation = string
+type progress = number
+
+export type ExportedWord = [native, translation, progress]
