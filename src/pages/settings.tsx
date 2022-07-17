@@ -12,8 +12,8 @@ import {
 } from '@mui/material'
 import _ from 'lodash'
 import { ChangeEvent, useCallback, useState } from 'react'
-import useLocalStorageState from 'use-local-storage-state'
 import { langs, lsConf } from '../conf'
+import { useLS } from '../hooks/useLS'
 import { ExportedWord } from '../types/word'
 import { asyncMap, download, jsonParse, readTextFromFile } from '../utils'
 import { db } from '../utils/db'
@@ -21,37 +21,12 @@ import { db } from '../utils/db'
 export const SettingsPage = () => {
     const [err, setErr] = useState(false)
 
-    const [countWords, setCountWords] = useLocalStorageState(
-        lsConf.count_words.name,
-        {
-            defaultValue: lsConf.count_words.def,
-        }
-    )
-    const [successOffset, setSuccessOffset] = useLocalStorageState(
-        lsConf.success_offset.name,
-        {
-            defaultValue: lsConf.success_offset.def,
-        }
-    )
-    const [mistakeOffset, setMistakeOffset] = useLocalStorageState(
-        lsConf.mistake_offset.name,
-        {
-            defaultValue: lsConf.mistake_offset.def,
-        }
-    )
-
-    const [nativeLang, setNativeLang] = useLocalStorageState(
-        lsConf.nativeLang.name,
-        {
-            defaultValue: lsConf.nativeLang.def,
-        }
-    )
-    const [translationLang, setTranslationLang] = useLocalStorageState(
-        lsConf.translationLang.name,
-        {
-            defaultValue: lsConf.translationLang.def,
-        }
-    )
+    const [countWords, setCountWords] = useLS(lsConf.count_words)
+    const [successOffset, setSuccessOffset] = useLS(lsConf.success_offset)
+    const [mistakeOffset, setMistakeOffset] = useLS(lsConf.mistake_offset)
+    const [nativeLang, setNativeLang] = useLS(lsConf.nativeLang)
+    const [translationLang, setTranslationLang] = useLS(lsConf.translationLang)
+    const [learnFirst, setLearnFirst] = useLS(lsConf.learn_first)
 
     const exportWords = useCallback(async () => {
         const words = await db.words.toArray()
@@ -120,6 +95,19 @@ export const SettingsPage = () => {
             </Dialog>
             <Card>
                 <CardContent>
+                    <Typography>
+                        {learnFirst > 0
+                            ? `Learn first of ${learnFirst} words`
+                            : 'Has no limit'}
+                    </Typography>
+                    <Slider
+                        min={0}
+                        max={50}
+                        value={learnFirst}
+                        onChange={(e, v) =>
+                            setLearnFirst(_.isArray(v) ? v[0] : v)
+                        }
+                    ></Slider>
                     <Typography>Count words: {countWords}</Typography>
                     <Slider
                         min={2}

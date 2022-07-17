@@ -15,6 +15,9 @@ import { compareTwoStrings } from 'string-similarity'
 import { useUpdateProgress } from '../hooks/useUpdateProgress'
 import { Form } from '../components/Form'
 import { usePressBtn } from '../hooks/usePressBtn'
+import { lsConf } from '../conf'
+import _ from 'lodash'
+import { useLS } from '../hooks/useLS'
 
 export const WritePage = () => {
     const [word, setWord] = useState<Word | null>(null)
@@ -22,16 +25,21 @@ export const WritePage = () => {
     const [helper, setHelper] = useState('')
     const [prev, setPrev] = useState<Word | null>(null)
 
+    const [learnFirst] = useLS(lsConf.learn_first)
+
     const inputRef = useRef<HTMLInputElement>(null)
 
     const generate = useCallback(async () => {
-        const words = await db.words.where('progress').below(1).toArray()
+        let words = await db.words.where('progress').below(1).sortBy('id')
+        if (learnFirst > 0) {
+            words = _.slice(words, 0, learnFirst)
+        }
         const word = getRandomValueFromArray(words)
         if (!word) return
         setResult('')
         setHelper('')
         setWord(word)
-    }, [])
+    }, [learnFirst])
 
     const updater = useUpdateProgress(word)
 

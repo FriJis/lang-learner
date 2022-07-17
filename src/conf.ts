@@ -19,6 +19,10 @@ export const lsConf = {
         name: 'translation_lang',
         def: 'en-EN',
     },
+    learn_first: {
+        name: 'learn_first',
+        def: 15,
+    },
 }
 
 export const langs = ['ru-RU', 'en-EN']

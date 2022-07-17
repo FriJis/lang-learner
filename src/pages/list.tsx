@@ -16,8 +16,8 @@ import {
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import useLocalStorageState from 'use-local-storage-state'
 import { lsConf } from '../conf'
+import { useLS } from '../hooks/useLS'
 import { Word } from '../types/word'
 import { normalize, regCheck } from '../utils'
 import { db } from '../utils/db'
@@ -26,23 +26,11 @@ import { swapWord } from '../utils/db'
 export const ListPage = () => {
     const [native, setNative] = useState('')
     const [translation, setTranslation] = useState('')
-
     const [showNotification, setShowNotification] = useState(false)
-
     const [showBackdrop, setShowBackdrop] = useState(false)
 
-    const [translationLang, setTranslationLang] = useLocalStorageState(
-        lsConf.translationLang.name,
-        {
-            defaultValue: lsConf.translationLang.def,
-        }
-    )
-    const [nativeLang, setNativeLang] = useLocalStorageState(
-        lsConf.nativeLang.name,
-        {
-            defaultValue: lsConf.nativeLang.def,
-        }
-    )
+    const [translationLang, setTranslationLang] = useLS(lsConf.translationLang)
+    const [nativeLang, setNativeLang] = useLS(lsConf.nativeLang)
 
     const nativeRef = useRef<HTMLInputElement>(null)
 

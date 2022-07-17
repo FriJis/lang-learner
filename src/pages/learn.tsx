@@ -10,8 +10,8 @@ import {
 } from '@mui/material'
 import _ from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
-import useLocalStorageState from 'use-local-storage-state'
 import { lsConf } from '../conf'
+import { useLS } from '../hooks/useLS'
 import { useUpdateProgress } from '../hooks/useUpdateProgress'
 import { Word } from '../types/word'
 import { getRandomValueFromArray, say } from '../utils'
@@ -23,36 +23,41 @@ export const LearnPage = () => {
 
     const [translations, setTranslations] = useState<string[]>([])
 
-    const [countWords] = useLocalStorageState(lsConf.count_words.name, {
-        defaultValue: lsConf.count_words.def,
-    })
-
-    const [translationLang] = useLocalStorageState(
-        lsConf.translationLang.name,
-        {
-            defaultValue: lsConf.translationLang.def,
-        }
-    )
-    const [nativeLang] = useLocalStorageState(lsConf.nativeLang.name, {
-        defaultValue: lsConf.nativeLang.def,
-    })
+    const [countWords] = useLS(lsConf.count_words)
+    const [translationLang] = useLS(lsConf.translationLang)
+    const [nativeLang] = useLS(lsConf.nativeLang)
+    const [learnFirst] = useLS(lsConf.learn_first)
 
     const updater = useUpdateProgress(word)
 
     const generate = useCallback(async () => {
-        const words = await db.words.toArray()
+        let wordsToLearn = await db.words
+            .where('progress')
+            .below(1)
+            .sortBy('id')
+
+        if (learnFirst > 0) {
+            wordsToLearn = _.slice(wordsToLearn, 0, learnFirst)
+        }
+
+        const randomWord = getRandomValueFromArray(wordsToLearn)
+        if (!randomWord) return setTranslations([])
+
+        const variants = await db.words.where('progress').below(1).toArray()
         const preparedWords = _.slice(
-            _.shuffle(words.filter((w) => w.progress < 1)),
+            _.shuffle(variants.filter((v) => v.id !== randomWord.id)),
             0,
             countWords
         )
-        const randomWord = getRandomValueFromArray(preparedWords)
-
-        if (!randomWord) return setTranslations([])
 
         setWord(randomWord)
-        setTranslations(preparedWords.map((w) => w.translation))
-    }, [countWords])
+        setTranslations(
+            _.shuffle([
+                randomWord.translation,
+                ...preparedWords.map((w) => w.translation),
+            ])
+        )
+    }, [countWords, learnFirst])
 
     const compare = useCallback(
         async (translation?: string) => {
