@@ -4,6 +4,7 @@ import {
     CardActions,
     CardContent,
     Input,
+    Snackbar,
     Typography,
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
@@ -18,6 +19,7 @@ export const WritePage = () => {
     const [word, setWord] = useState<Word | null>(null)
     const [result, setResult] = useState('')
     const [helper, setHelper] = useState('')
+    const [prev, setPrev] = useState<Word | null>(null)
 
     const generate = useCallback(async () => {
         const words = await db.words.toArray()
@@ -40,6 +42,7 @@ export const WritePage = () => {
         await updater?.success(compared - hintRatio)
 
         generate()
+        setPrev(word)
     }, [result, word, updater, generate, helper])
 
     const help = useCallback(() => {
@@ -54,6 +57,12 @@ export const WritePage = () => {
 
     return (
         <>
+            <Snackbar
+                open={!!prev}
+                onClose={() => setPrev(null)}
+                message={`${prev?.native} - ${prev?.translation}`}
+                autoHideDuration={5000}
+            ></Snackbar>
             <Form onSubmit={compare}>
                 <Card>
                     <CardContent>

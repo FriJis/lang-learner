@@ -106,7 +106,7 @@ export const ListPage = () => {
             <Snackbar
                 open={showNotification}
                 onClose={() => setShowNotification(false)}
-                message="It has already existed"
+                message="It already exists"
                 autoHideDuration={1000}
             ></Snackbar>
 
