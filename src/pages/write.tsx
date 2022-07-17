@@ -34,6 +34,7 @@ export const WritePage = () => {
         if (learnFirst > 0) {
             words = _.slice(words, 0, learnFirst)
         }
+
         const word = getRandomValueFromArray(words)
         if (!word) return
         setResult('')

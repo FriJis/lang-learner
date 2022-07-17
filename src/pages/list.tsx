@@ -28,6 +28,7 @@ export const ListPage = () => {
     const [translation, setTranslation] = useState('')
     const [showNotification, setShowNotification] = useState(false)
     const [showBackdrop, setShowBackdrop] = useState(false)
+    const [showTranslation, setShowTranslation] = useState(true)
 
     const [translationLang, setTranslationLang] = useLS(lsConf.translationLang)
     const [nativeLang, setNativeLang] = useLS(lsConf.nativeLang)
@@ -108,7 +109,21 @@ export const ListPage = () => {
                                     <i className="fa-solid fa-arrow-right-arrow-left"></i>
                                 </IconButton>
                             </TableCell>
-                            <TableCell>Translation</TableCell>
+                            <TableCell>
+                                Translation{' '}
+                                <IconButton
+                                    onClick={() =>
+                                        setShowTranslation((o) => !o)
+                                    }
+                                    size="small"
+                                >
+                                    {showTranslation ? (
+                                        <i className="fa-solid fa-eye-slash"></i>
+                                    ) : (
+                                        <i className="fa-solid fa-eye"></i>
+                                    )}
+                                </IconButton>
+                            </TableCell>
                             <TableCell width={300}>Progress</TableCell>
                             <TableCell></TableCell>
                         </TableRow>
@@ -146,7 +161,11 @@ export const ListPage = () => {
                             </TableCell>
                         </TableRow>
                         {filteredWords?.map((word) => (
-                            <WordItem word={word} key={word.id}></WordItem>
+                            <WordItem
+                                word={word}
+                                key={word.id}
+                                showTranslation={showTranslation}
+                            ></WordItem>
                         ))}
                     </TableBody>
                 </Table>
@@ -155,7 +174,10 @@ export const ListPage = () => {
     )
 }
 
-const WordItem: FC<{ word: Word }> = ({ word }) => {
+const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
+    word,
+    showTranslation,
+}) => {
     const [newProgress, setNewProgress] = useState(word.progress)
     const del = useCallback(() => db.words.delete(word.id || 0), [word.id])
 
@@ -184,12 +206,18 @@ const WordItem: FC<{ word: Word }> = ({ word }) => {
                 </IconButton>
             </TableCell>
             <TableCell>
-                <Input
-                    value={word.translation}
-                    onChange={(e) =>
-                        db.words.update(word, { translation: e.target.value })
-                    }
-                ></Input>
+                {showTranslation ? (
+                    <Input
+                        value={word.translation}
+                        onChange={(e) =>
+                            db.words.update(word, {
+                                translation: e.target.value,
+                            })
+                        }
+                    ></Input>
+                ) : (
+                    <Input value="..." disabled></Input>
+                )}
             </TableCell>
             <TableCell>
                 <Slider
