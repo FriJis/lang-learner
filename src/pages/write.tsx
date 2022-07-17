@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Word } from '../types/word'
-import { getRandomValueFromArray } from '../utils'
+import { getRandomValueFromArray, say } from '../utils'
 import { db } from '../utils/db'
 import { compareTwoStrings } from 'string-similarity'
 import { useUpdateProgress } from '../hooks/useUpdateProgress'
@@ -26,6 +26,7 @@ export const WritePage = () => {
     const [prev, setPrev] = useState<Word | null>(null)
 
     const [learnFirst] = useLS(lsConf.learn_first)
+    const [translationLang] = useLS(lsConf.translationLang)
 
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -54,6 +55,7 @@ export const WritePage = () => {
 
         generate()
         setPrev(word)
+        say(word.translation, translationLang)
     }, [result, word, updater, generate, helper])
 
     const help = useCallback(() => {
