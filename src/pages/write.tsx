@@ -22,7 +22,7 @@ export const WritePage = () => {
     const [prev, setPrev] = useState<Word | null>(null)
 
     const generate = useCallback(async () => {
-        const words = await db.words.toArray()
+        const words = await db.words.where('progress').below(1).toArray()
         const word = getRandomValueFromArray(words)
         if (!word) return
         setResult('')
