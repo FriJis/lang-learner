@@ -12,24 +12,19 @@ import _ from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
 import { lsConf } from '../conf'
+import { useUpdateProgress } from '../hooks/useUpdateProgress'
 import { Word } from '../types/word'
 import { getRandomValueFromArray, say } from '../utils'
 import { db } from '../utils/db'
 
 export const LearnPage = () => {
-    const [native, setNative] = useState('')
+    const [word, setWord] = useState<Word | null>(null)
     const [mistake, setMistake] = useState<Word | null>(null)
 
     const [translations, setTranslations] = useState<string[]>([])
 
     const [countWords] = useLocalStorageState(lsConf.count_words.name, {
         defaultValue: lsConf.count_words.def,
-    })
-    const [successOffset] = useLocalStorageState(lsConf.success_offset.name, {
-        defaultValue: lsConf.success_offset.def,
-    })
-    const [mistakeOffset] = useLocalStorageState(lsConf.mistake_offset.name, {
-        defaultValue: lsConf.mistake_offset.def,
     })
 
     const [translationLang] = useLocalStorageState(
@@ -42,6 +37,8 @@ export const LearnPage = () => {
         defaultValue: lsConf.nativeLang.def,
     })
 
+    const updater = useUpdateProgress(word)
+
     const generate = useCallback(async () => {
         const words = await db.words.toArray()
         const preparedWords = _.slice(
@@ -53,31 +50,24 @@ export const LearnPage = () => {
 
         if (!randomWord) return setTranslations([])
 
-        setNative(randomWord.native)
+        setWord(randomWord)
         setTranslations(preparedWords.map((w) => w.translation))
     }, [countWords])
 
     const compare = useCallback(
         async (translation?: string) => {
-            const words = await db.words.toArray()
-            const word = words?.find((w) => w.native === native)
-
             if (!word) return
 
             if (word.translation === translation) {
-                await db.words.update(word.id || 0, {
-                    progress: word.progress + successOffset,
-                })
+                await updater?.success()
             } else {
                 setMistake(word)
-                await db.words.update(word.id || 0, {
-                    progress: word.progress * mistakeOffset,
-                })
+                await updater?.fail()
             }
 
             generate()
         },
-        [native, generate, successOffset, mistakeOffset]
+        [word, generate, updater]
     )
 
     useEffect(() => {
@@ -104,10 +94,10 @@ export const LearnPage = () => {
                 <CardContent>
                     <Typography
                         align="center"
-                        onMouseEnter={() => say(native, nativeLang)}
+                        onMouseEnter={() => say(word?.native || '', nativeLang)}
                         onMouseLeave={() => window.speechSynthesis.cancel()}
                     >
-                        {native}
+                        {word?.native || ''}
                     </Typography>
                 </CardContent>
                 <CardActions>
