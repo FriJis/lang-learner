@@ -23,6 +23,7 @@ export const WritePage = () => {
     const [word, setWord] = useState<Word | null>(null)
     const [result, setResult] = useState('')
     const [helper, setHelper] = useState('')
+    const [showPrev, setShowPrev] = useState(false)
     const [prev, setPrev] = useState<Word | null>(null)
 
     const [learnFirst] = useLS(lsConf.learn_first)
@@ -35,13 +36,15 @@ export const WritePage = () => {
         if (learnFirst > 0) {
             words = _.slice(words, 0, learnFirst)
         }
-
+        if (words.length > 1 && prev?.id) {
+            words = words.filter((w) => w.id !== prev.id)
+        }
         const word = getRandomValueFromArray(words)
         if (!word) return
         setResult('')
         setHelper('')
         setWord(word)
-    }, [learnFirst])
+    }, [learnFirst, prev])
 
     const updater = useUpdateProgress(word)
 
@@ -55,8 +58,9 @@ export const WritePage = () => {
 
         generate()
         setPrev(word)
+        setShowPrev(true)
         say(word.translation, translationLang)
-    }, [result, word, updater, generate, helper])
+    }, [result, word, updater, generate, helper, translationLang])
 
     const help = useCallback(() => {
         const nextIndex = helper.length + 1
@@ -84,8 +88,8 @@ export const WritePage = () => {
     return (
         <>
             <Snackbar
-                open={!!prev}
-                onClose={() => setPrev(null)}
+                open={showPrev}
+                onClose={() => setShowPrev(false)}
                 message={`${prev?.native} - ${prev?.translation}`}
                 autoHideDuration={5000}
             ></Snackbar>
