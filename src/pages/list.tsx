@@ -178,7 +178,9 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
     word,
     showTranslation,
 }) => {
+    const [updWord, setUpdWord] = useState(word)
     const [newProgress, setNewProgress] = useState(word.progress)
+
     const del = useCallback(() => db.words.delete(word.id || 0), [word.id])
 
     const updateProgress = useCallback(
@@ -186,17 +188,26 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
         [newProgress, word.id]
     )
 
+    const saveWord = useCallback(() => {
+        db.words.update(word, updWord)
+    }, [word, updWord])
+
     const changeSides = useCallback(() => {
         swapWord(word)
     }, [word])
 
     return (
-        <TableRow key={word.id}>
+        <TableRow key={word.id} onFocus={() => {}}>
             <TableCell>
                 <Input
-                    value={word.native}
+                    value={updWord.native}
                     onChange={(e) =>
-                        db.words.update(word, { native: e.target.value })
+                        setUpdWord((o) => ({ ...o, native: e.target.value }))
+                    }
+                    endAdornment={
+                        <IconButton size="small" onClick={saveWord}>
+                            <i className="fa-solid fa-floppy-disk"></i>
+                        </IconButton>
                     }
                 ></Input>
             </TableCell>
@@ -208,11 +219,17 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
             <TableCell>
                 {showTranslation ? (
                     <Input
-                        value={word.translation}
+                        value={updWord.translation}
                         onChange={(e) =>
-                            db.words.update(word, {
+                            setUpdWord((o) => ({
+                                ...o,
                                 translation: e.target.value,
-                            })
+                            }))
+                        }
+                        endAdornment={
+                            <IconButton size="small" onClick={saveWord}>
+                                <i className="fa-solid fa-floppy-disk"></i>
+                            </IconButton>
                         }
                     ></Input>
                 ) : (
