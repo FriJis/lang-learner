@@ -200,7 +200,7 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
             native: word.translation,
             translation: oldNative,
         })
-    }, [word])
+    }, [word, updWord])
 
     return (
         <TableRow key={word.id} onFocus={() => {}}>
