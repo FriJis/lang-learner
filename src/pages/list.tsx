@@ -194,6 +194,12 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
 
     const changeSides = useCallback(() => {
         swapWord(word)
+        const oldNative = updWord.native
+        setUpdWord({
+            ...word,
+            native: word.translation,
+            translation: oldNative,
+        })
     }, [word])
 
     return (
