@@ -188,19 +188,17 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
         [newProgress, word.id]
     )
 
+    useEffect(() => {
+        setUpdWord(word)
+    }, [word])
+
     const saveWord = useCallback(() => {
         db.words.update(word, updWord)
     }, [word, updWord])
 
     const changeSides = useCallback(() => {
         swapWord(word)
-        const oldNative = updWord.native
-        setUpdWord({
-            ...word,
-            native: word.translation,
-            translation: oldNative,
-        })
-    }, [word, updWord])
+    }, [word])
 
     return (
         <TableRow key={word.id} onFocus={() => {}}>

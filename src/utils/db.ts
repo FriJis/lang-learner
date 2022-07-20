@@ -15,9 +15,12 @@ export class MySubClassedDexie extends Dexie {
 
 export const db = new MySubClassedDexie()
 
-export function swapWord(word: Word) {
-    return db.words.update(word, {
+export async function swapWord(word: Word) {
+    const newVal = {
+        ...word,
         native: normalize(word.translation),
         translation: normalize(word.native),
-    })
+    }
+    await db.words.update(word, newVal)
+    return newVal
 }
