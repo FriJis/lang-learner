@@ -54,7 +54,7 @@ export const WritePage = () => {
         const compared = compareTwoStrings(word.translation || '', result)
         const hintRatio = helper.length / word.translation.length
 
-        await updater?.success(compared - hintRatio)
+        await updater?.success(compared - hintRatio * 2)
 
         generate()
         setPrev(word)
@@ -65,6 +65,7 @@ export const WritePage = () => {
     const help = useCallback(() => {
         const nextIndex = helper.length + 1
         const nextHint = word?.translation.slice(0, nextIndex) || ''
+        if (nextHint === word?.translation) setResult(word.translation)
         setHelper(nextHint)
         inputRef.current?.click()
     }, [helper, word, inputRef])
