@@ -28,6 +28,7 @@ export const WritePage = () => {
 
     const [learnFirst] = useLS(lsConf.learn_first)
     const [translationLang] = useLS(lsConf.translationLang)
+    const [nativeLang] = useLS(lsConf.nativeLang)
 
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -59,13 +60,14 @@ export const WritePage = () => {
         generate()
         setPrev(word)
         setShowPrev(true)
+        say(word.native, nativeLang)
         say(word.translation, translationLang)
     }, [result, word, updater, generate, helper, translationLang])
 
     const help = useCallback(() => {
         const nextIndex = helper.length + 1
         const nextHint = word?.translation.slice(0, nextIndex) || ''
-        if (nextHint === word?.translation) setResult(word.translation)
+        if (nextHint === word?.translation) return compare()
         setHelper(nextHint)
         inputRef.current?.click()
     }, [helper, word, inputRef])
