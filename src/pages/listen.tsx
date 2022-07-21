@@ -57,7 +57,9 @@ export const ListenPage = () => {
                 </Typography>
             </CardContent>
             <CardActions>
-                <Button onClick={() => setPlaying((o) => !o)}>listen</Button>
+                <Button onClick={() => setPlaying((o) => !o)}>
+                    {playing ? 'Stop' : 'Listen'}
+                </Button>
             </CardActions>
         </Card>
     )

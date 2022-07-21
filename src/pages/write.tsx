@@ -53,17 +53,19 @@ export const WritePage = () => {
 
         await updater?.success(compared - hintRatio * 2)
 
-        generate()
         setPrev(word)
         setShowPrev(true)
         say(word.native, nativeLang)
         say(word.translation, translationLang)
-    }, [result, word, updater, generate, helper, translationLang, nativeLang])
+    }, [result, word, updater, helper, translationLang, nativeLang])
 
     const help = useCallback(() => {
         const nextIndex = helper.length + 1
         const nextHint = word?.translation.slice(0, nextIndex) || ''
-        if (nextHint === word?.translation) return compare()
+        if (nextHint === word?.translation) {
+            updater.fail()
+            return setPrev(word)
+        }
         setHelper(nextHint)
         inputRef.current?.click()
     }, [helper, word, inputRef, compare])

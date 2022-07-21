@@ -65,14 +65,12 @@ export const LearnPage = () => {
             } else {
                 say(word.native, nativeLang)
                 say(word.translation, translationLang)
-                setPrev(word)
                 setShowPrev(true)
                 await updater?.fail()
             }
-
-            generate()
+            setPrev(word)
         },
-        [word, generate, updater, nativeLang, translationLang]
+        [word, updater, nativeLang, translationLang]
     )
 
     useEffect(() => {
