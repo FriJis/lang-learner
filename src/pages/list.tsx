@@ -148,7 +148,14 @@ export const ListPage = () => {
                                     placeholder="Translation..."
                                 ></Input>
                             </TableCell>
-                            <TableCell></TableCell>
+                            <TableCell>
+                                {words?.reduce(
+                                    (acc, w) =>
+                                        w.progress >= 1 ? acc + 1 : acc,
+                                    0
+                                ) || 0}
+                                /{words?.length || 0}
+                            </TableCell>
                             <TableCell>
                                 <Button
                                     onClick={add}
