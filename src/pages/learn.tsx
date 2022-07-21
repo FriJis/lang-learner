@@ -15,11 +15,12 @@ import { useLS } from '../hooks/useLS'
 import { useUpdateProgress } from '../hooks/useUpdateProgress'
 import { Word } from '../types/word'
 import { getRandomValueFromArray, say } from '../utils'
-import { db } from '../utils/db'
+import { composeWords, db } from '../utils/db'
 
 export const LearnPage = () => {
     const [word, setWord] = useState<Word | null>(null)
-    const [mistake, setMistake] = useState<Word | null>(null)
+    const [prev, setPrev] = useState<Word | null>(null)
+    const [showPrev, setShowPrev] = useState(false)
 
     const [translations, setTranslations] = useState<string[]>([])
 
@@ -31,14 +32,10 @@ export const LearnPage = () => {
     const updater = useUpdateProgress(word)
 
     const generate = useCallback(async () => {
-        let wordsToLearn = await db.words
-            .where('progress')
-            .below(1)
-            .sortBy('id')
-
-        if (learnFirst > 0) {
-            wordsToLearn = _.slice(wordsToLearn, 0, learnFirst)
-        }
+        const wordsToLearn = await composeWords({
+            learnFirst,
+            prev: prev || undefined,
+        })
 
         const randomWord = getRandomValueFromArray(wordsToLearn)
         if (!randomWord) return setTranslations([])
@@ -57,7 +54,7 @@ export const LearnPage = () => {
                 ...preparedWords.map((w) => w.translation),
             ])
         )
-    }, [countWords, learnFirst])
+    }, [countWords, learnFirst, prev])
 
     const compare = useCallback(
         async (translation?: string) => {
@@ -66,13 +63,16 @@ export const LearnPage = () => {
             if (word.translation === translation) {
                 await updater?.success()
             } else {
-                setMistake(word)
+                say(word.native, nativeLang)
+                say(word.translation, translationLang)
+                setPrev(word)
+                setShowPrev(true)
                 await updater?.fail()
             }
 
             generate()
         },
-        [word, generate, updater]
+        [word, generate, updater, nativeLang, translationLang]
     )
 
     useEffect(() => {
@@ -90,9 +90,9 @@ export const LearnPage = () => {
 
     return (
         <>
-            <Dialog onClose={() => setMistake(null)} open={!!mistake}>
+            <Dialog onClose={() => setShowPrev(false)} open={showPrev}>
                 <DialogTitle>
-                    {mistake?.native} - {mistake?.translation}
+                    {prev?.native} - {prev?.translation}
                 </DialogTitle>
             </Dialog>
             <Card>

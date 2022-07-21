@@ -10,13 +10,12 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Word } from '../types/word'
 import { getRandomValueFromArray, say } from '../utils'
-import { db } from '../utils/db'
+import { composeWords } from '../utils/db'
 import { compareTwoStrings } from 'string-similarity'
 import { useUpdateProgress } from '../hooks/useUpdateProgress'
 import { Form } from '../components/Form'
 import { usePressBtn } from '../hooks/usePressBtn'
 import { lsConf } from '../conf'
-import _ from 'lodash'
 import { useLS } from '../hooks/useLS'
 
 export const WritePage = () => {
@@ -33,13 +32,10 @@ export const WritePage = () => {
     const inputRef = useRef<HTMLInputElement>(null)
 
     const generate = useCallback(async () => {
-        let words = await db.words.where('progress').below(1).sortBy('id')
-        if (learnFirst > 0) {
-            words = _.slice(words, 0, learnFirst)
-        }
-        if (words.length > 1 && prev?.id) {
-            words = words.filter((w) => w.id !== prev.id)
-        }
+        const words = await composeWords({
+            learnFirst,
+            prev: prev || undefined,
+        })
         const word = getRandomValueFromArray(words)
         if (!word) return
         setResult('')
@@ -62,7 +58,7 @@ export const WritePage = () => {
         setShowPrev(true)
         say(word.native, nativeLang)
         say(word.translation, translationLang)
-    }, [result, word, updater, generate, helper, translationLang])
+    }, [result, word, updater, generate, helper, translationLang, nativeLang])
 
     const help = useCallback(() => {
         const nextIndex = helper.length + 1
@@ -70,7 +66,7 @@ export const WritePage = () => {
         if (nextHint === word?.translation) return compare()
         setHelper(nextHint)
         inputRef.current?.click()
-    }, [helper, word, inputRef])
+    }, [helper, word, inputRef, compare])
 
     usePressBtn(
         useCallback(

@@ -1,4 +1,5 @@
 import Dexie, { Table } from 'dexie'
+import _ from 'lodash'
 import { normalize } from '.'
 import { Word } from '../types/word'
 
@@ -23,4 +24,16 @@ export async function swapWord(word: Word) {
     }
     await db.words.update(word, newVal)
     return newVal
+}
+
+export async function composeWords(adds?: { learnFirst: number; prev?: Word }) {
+    const { prev, learnFirst } = adds || {}
+    let words = await db.words.where('progress').below(1).sortBy('id')
+    if (!_.isUndefined(learnFirst) && learnFirst > 0) {
+        words = _.slice(words, 0, learnFirst)
+    }
+    if (words.length > 1 && prev?.id) {
+        words = words.filter((w) => w.id !== prev.id)
+    }
+    return words
 }
