@@ -17,6 +17,7 @@ import { Form } from '../components/Form'
 import { usePressBtn } from '../hooks/usePressBtn'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
+import { useStopWatch } from '../hooks/useStopWatch'
 
 export const WritePage = () => {
     const [word, setWord] = useState<Word | null>(null)
@@ -24,6 +25,7 @@ export const WritePage = () => {
     const [helper, setHelper] = useState('')
     const [showPrev, setShowPrev] = useState(false)
     const [prev, setPrev] = useState<Word | null>(null)
+    const stopWatch = useStopWatch()
 
     const [learnFirst] = useLS(lsConf.learn_first)
     const [translationLang] = useLS(lsConf.translationLang)
@@ -64,11 +66,13 @@ export const WritePage = () => {
         const nextHint = word?.translation.slice(0, nextIndex) || ''
         if (nextHint === word?.translation) {
             updater.fail()
+            say(word.native, nativeLang)
+            say(word.translation, translationLang)
             return setPrev(word)
         }
         setHelper(nextHint)
         inputRef.current?.click()
-    }, [helper, word, inputRef, compare])
+    }, [helper, word, inputRef, updater, nativeLang, translationLang])
 
     usePressBtn(
         useCallback(
@@ -97,6 +101,7 @@ export const WritePage = () => {
             <Form onSubmit={compare}>
                 <Card>
                     <CardContent>
+                        <Typography>Stopwatch: {stopWatch}</Typography>
                         <Typography>{word?.native}</Typography>
                         {helper.length > 0 && (
                             <Typography color={'gray'}>
