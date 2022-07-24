@@ -14,16 +14,18 @@ export function useUpdateProgress(word?: Word | null) {
 
     const fail = useCallback(() => {
         if (!word) return null
+        const progress = word.progress * mistakeOffset
         return db.words.update(word.id || 0, {
-            progress: word.progress * mistakeOffset,
+            progress: progress < 0 ? 0 : progress,
         })
     }, [word, mistakeOffset])
 
     const success = useCallback(
         (offset?: number) => {
             if (!word) return null
+            const progress = word.progress + successOffset * (offset || 1)
             return db.words.update(word.id || 0, {
-                progress: word.progress + successOffset * (offset || 1),
+                progress: progress > 1 ? 1 : progress,
             })
         },
         [word, successOffset]
