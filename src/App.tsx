@@ -1,5 +1,7 @@
 import { Container, Tab, Tabs } from '@mui/material'
 import { useState } from 'react'
+import { ControlWorkPage } from './pages/controlWork'
+import { FaqPage } from './pages/faq'
 import { LearnPage } from './pages/learn'
 import { ListPage } from './pages/list'
 import { ListenPage } from './pages/listen'
@@ -8,10 +10,12 @@ import { WritePage } from './pages/write'
 
 enum Pages {
     list = 'list',
-    learn = 'learn',
+    quiz = 'quiz',
     settings = 'settings',
     write = 'write',
-    listen = 'listen',
+    listening = 'listening',
+    controlWork = 'controlWork',
+    faq = 'faq',
 }
 
 function App() {
@@ -21,17 +25,21 @@ function App() {
         <Container>
             <Tabs value={page} onChange={(e, v) => setPage(v)}>
                 <Tab label="List" value={Pages.list}></Tab>
-                <Tab label="Learn" value={Pages.learn}></Tab>
+                <Tab label="Quiz" value={Pages.quiz}></Tab>
                 <Tab label="Write" value={Pages.write}></Tab>
-                <Tab label="Listen" value={Pages.listen}></Tab>
+                <Tab label="Listening" value={Pages.listening}></Tab>
+                <Tab label="Control Work" value={Pages.controlWork}></Tab>
                 <Tab label="Settings" value={Pages.settings}></Tab>
+                <Tab label="FAQ" value={Pages.faq}></Tab>
             </Tabs>
 
             {page === Pages.list && <ListPage></ListPage>}
-            {page === Pages.learn && <LearnPage></LearnPage>}
+            {page === Pages.quiz && <LearnPage></LearnPage>}
             {page === Pages.write && <WritePage></WritePage>}
-            {page === Pages.listen && <ListenPage></ListenPage>}
+            {page === Pages.listening && <ListenPage></ListenPage>}
+            {page === Pages.controlWork && <ControlWorkPage></ControlWorkPage>}
             {page === Pages.settings && <SettingsPage></SettingsPage>}
+            {page === Pages.faq && <FaqPage></FaqPage>}
         </Container>
     )
 }
