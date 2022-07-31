@@ -62,9 +62,10 @@ export const WritePage = () => {
     }, [result, word, updater, helper, translationLang, nativeLang])
 
     const help = useCallback(() => {
+        if (!word) return
         const nextIndex = helper.length + 1
-        const nextHint = word?.translation.slice(0, nextIndex) || ''
-        if (nextHint === word?.translation) {
+        const nextHint = word.translation.slice(0, nextIndex)
+        if (helper === word.translation) {
             updater.fail()
             say(word.native, nativeLang)
             say(word.translation, translationLang)
@@ -74,6 +75,16 @@ export const WritePage = () => {
         inputRef.current?.click()
     }, [helper, word, inputRef, updater, nativeLang, translationLang])
 
+    const idk = useCallback(() => {
+        if (!word) return
+        setPrev(word)
+        setShowPrev(true)
+        say(word.native, nativeLang)
+        say(word.translation, translationLang)
+        updater.fail()
+        generate()
+    }, [word, nativeLang, translationLang, generate, updater])
+
     usePressBtn(
         useCallback(
             (e) => {
@@ -81,8 +92,12 @@ export const WritePage = () => {
                     e.preventDefault()
                     help()
                 }
+                if (e.key === '-') {
+                    e.preventDefault()
+                    idk()
+                }
             },
-            [help]
+            [help, idk]
         )
     )
 
@@ -118,6 +133,7 @@ export const WritePage = () => {
                     </CardContent>
                     <CardActions>
                         <Button onClick={help}>Hint with one letter (+)</Button>
+                        <Button onClick={idk}>I don't know (-)</Button>
                         <Button
                             type="submit"
                             variant="contained"
