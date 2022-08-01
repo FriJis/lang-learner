@@ -112,7 +112,7 @@ export const WritePage = () => {
                 open={showPrev}
                 onClose={() => setShowPrev(false)}
                 message={`${prev?.native} - ${prev?.translation} ${
-                    !!word.info ? `(${word.info})` : ''
+                    !!prev?.info ? `(${prev.info})` : ''
                 }`}
                 autoHideDuration={5000}
             ></Snackbar>
