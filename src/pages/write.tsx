@@ -111,14 +111,18 @@ export const WritePage = () => {
             <Snackbar
                 open={showPrev}
                 onClose={() => setShowPrev(false)}
-                message={`${prev?.native} - ${prev?.translation}`}
+                message={`${prev?.native} - ${prev?.translation} ${
+                    !!word.info && `(${word.info})`
+                }`}
                 autoHideDuration={5000}
             ></Snackbar>
             <Form onSubmit={compare}>
                 <Card>
                     <CardContent>
                         <Typography>Stopwatch: {stopWatch}</Typography>
-                        <Typography>{word?.native}</Typography>
+                        <Typography>
+                            {word?.native} {!!word.info && `(${word.info})`}
+                        </Typography>
                         {helper.length > 0 && (
                             <Typography color={'gray'}>
                                 Hint: {helper}

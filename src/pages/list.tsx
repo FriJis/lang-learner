@@ -12,19 +12,23 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    Typography,
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FC, useCallback, useMemo, useRef, useState } from 'react'
 import { Nothing } from '../components/Nothing'
+import { WordEditor } from '../components/WordEditor'
 import { Word } from '../types/word'
-import { normalize, regCheck } from '../utils'
+import { regCheck } from '../utils'
 import { db, getCollection, getWords } from '../utils/db'
 import { swapWord } from '../utils/db'
 
 export const ListPage = () => {
     const [native, setNative] = useState('')
     const [translation, setTranslation] = useState('')
+
+    const [showAdd, setShowAdd] = useState(false)
     const [showNotification, setShowNotification] = useState(false)
     const [showBackdrop, setShowBackdrop] = useState(false)
     const [showTranslation, setShowTranslation] = useState(true)
@@ -44,23 +48,6 @@ export const ListPage = () => {
         [native, words, translation]
     )
 
-    const add = useCallback(async () => {
-        if (!native || !translation) return
-        if (!!filteredWords?.length) return setShowNotification(true)
-        const collection = await getCollection()
-        if (!collection) return
-
-        await db.words.add({
-            native: normalize(native),
-            translation: normalize(translation),
-            progress: 0,
-            collectionId: collection.id || 0,
-        })
-
-        setNative('')
-        setTranslation('')
-    }, [native, translation, filteredWords])
-
     const changeSides = useCallback(async () => {
         if (!words) return
         setShowBackdrop(true)
@@ -78,18 +65,6 @@ export const ListPage = () => {
         setShowBackdrop(false)
     }, [words])
 
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => {
-            if (e.key === 'Enter') {
-                nativeRef.current?.click()
-                add()
-            }
-        }
-
-        document.addEventListener('keypress', handler)
-        return () => document.removeEventListener('keypress', handler)
-    }, [add, nativeRef])
-
     if (!collection)
         return (
             <Nothing msg="Collection doesn't exist. You should create a collection into settings" />
@@ -97,6 +72,10 @@ export const ListPage = () => {
 
     return (
         <>
+            <WordEditor
+                show={showAdd}
+                onClose={() => setShowAdd(false)}
+            ></WordEditor>
             <Backdrop open={showBackdrop}>
                 <CircularProgress color="inherit" />
             </Backdrop>
@@ -133,6 +112,15 @@ export const ListPage = () => {
                                 </IconButton>
                             </TableCell>
                             <TableCell width={300}>Progress</TableCell>
+                            <TableCell>
+                                <Button
+                                    onClick={() => setShowAdd(true)}
+                                    fullWidth
+                                    color="success"
+                                >
+                                    <i className="fa-solid fa-plus"></i>
+                                </Button>
+                            </TableCell>
                             <TableCell></TableCell>
                         </TableRow>
                     </TableHead>
@@ -164,16 +152,8 @@ export const ListPage = () => {
                                 ) || 0}
                                 /{words?.length || 0}
                             </TableCell>
-                            <TableCell>
-                                <Button
-                                    onClick={add}
-                                    fullWidth
-                                    color="success"
-                                    variant="contained"
-                                >
-                                    Add
-                                </Button>
-                            </TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
                         </TableRow>
                         {filteredWords?.map((word) => (
                             <WordItem
@@ -193,7 +173,7 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
     word,
     showTranslation,
 }) => {
-    const [updWord, setUpdWord] = useState(word)
+    const [showEditor, setShowEditor] = useState(false)
     const [newProgress, setNewProgress] = useState(word.progress)
 
     const del = useCallback(() => db.words.delete(word.id || 0), [word.id])
@@ -203,72 +183,55 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
         [newProgress, word.id]
     )
 
-    useEffect(() => {
-        setUpdWord(word)
-    }, [word])
-
-    const saveWord = useCallback(() => {
-        db.words.update(word, updWord)
-    }, [word, updWord])
-
     const changeSides = useCallback(() => {
         swapWord(word)
     }, [word])
 
     return (
-        <TableRow key={word.id} onFocus={() => {}}>
-            <TableCell>
-                <Input
-                    value={updWord.native}
-                    onChange={(e) =>
-                        setUpdWord((o) => ({ ...o, native: e.target.value }))
-                    }
-                    endAdornment={
-                        <IconButton size="small" onClick={saveWord}>
-                            <i className="fa-solid fa-floppy-disk"></i>
-                        </IconButton>
-                    }
-                ></Input>
-            </TableCell>
-            <TableCell>
-                <IconButton onClick={changeSides}>
-                    <i className="fa-solid fa-arrow-right-arrow-left"></i>
-                </IconButton>
-            </TableCell>
-            <TableCell>
-                {showTranslation ? (
-                    <Input
-                        value={updWord.translation}
-                        onChange={(e) =>
-                            setUpdWord((o) => ({
-                                ...o,
-                                translation: e.target.value,
-                            }))
+        <>
+            <WordEditor
+                word={word}
+                show={showEditor}
+                onClose={() => setShowEditor(false)}
+            ></WordEditor>
+            <TableRow key={word.id} onFocus={() => {}}>
+                <TableCell>
+                    <Typography>{word.native}</Typography>
+                </TableCell>
+                <TableCell>
+                    <IconButton onClick={changeSides}>
+                        <i className="fa-solid fa-arrow-right-arrow-left"></i>
+                    </IconButton>
+                </TableCell>
+                <TableCell>
+                    {showTranslation ? (
+                        <Typography>{word.translation}</Typography>
+                    ) : (
+                        '...'
+                    )}
+                </TableCell>
+                <TableCell>
+                    <Slider
+                        max={1}
+                        step={0.01}
+                        value={newProgress}
+                        onChange={(e, v) =>
+                            setNewProgress(_.isArray(v) ? v[0] : v)
                         }
-                        endAdornment={
-                            <IconButton size="small" onClick={saveWord}>
-                                <i className="fa-solid fa-floppy-disk"></i>
-                            </IconButton>
-                        }
-                    ></Input>
-                ) : (
-                    <Input value="..." disabled></Input>
-                )}
-            </TableCell>
-            <TableCell>
-                <Slider
-                    max={1}
-                    step={0.01}
-                    value={newProgress}
-                    onChange={(e, v) => setNewProgress(_.isArray(v) ? v[0] : v)}
-                    onChangeCommitted={updateProgress}
-                ></Slider>
-            </TableCell>
-            <TableCell>
-                <Button onClick={del} fullWidth color="error">
-                    <i className="fa-solid fa-trash"></i>
-                </Button>
-            </TableCell>
-        </TableRow>
+                        onChangeCommitted={updateProgress}
+                    ></Slider>
+                </TableCell>
+                <TableCell>
+                    <Button onClick={() => setShowEditor(true)} fullWidth>
+                        <i className="fa-solid fa-pen-to-square"></i>
+                    </Button>
+                </TableCell>
+                <TableCell>
+                    <Button onClick={del} fullWidth color="error">
+                        <i className="fa-solid fa-trash"></i>
+                    </Button>
+                </TableCell>
+            </TableRow>
+        </>
     )
 }

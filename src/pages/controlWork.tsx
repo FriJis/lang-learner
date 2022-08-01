@@ -76,7 +76,7 @@ export const ControlWorkPage = () => {
                         onMouseEnter={() => sayNative(word?.native || '')}
                         onMouseLeave={() => window.speechSynthesis.cancel()}
                     >
-                        {word?.native || ''}
+                        {word?.native || ''} {!!word.info && `(${word.info})`}
                     </Typography>
                 </CardContent>
                 {showTranslations && (

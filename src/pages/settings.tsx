@@ -42,7 +42,6 @@ export const SettingsPage = () => {
         () => collection?.translationLang || '',
         [collection]
     )
-    console.log(nativeLang)
 
     const setLang = useCallback(
         (type: 'nativeLang' | 'translationLang', lang: string) => {
