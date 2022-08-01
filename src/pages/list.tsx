@@ -16,11 +16,12 @@ import {
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Nothing } from '../components/Nothing'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { Word } from '../types/word'
 import { normalize, regCheck } from '../utils'
-import { db } from '../utils/db'
+import { db, getCollection, getWords } from '../utils/db'
 import { swapWord } from '../utils/db'
 
 export const ListPage = () => {
@@ -34,8 +35,9 @@ export const ListPage = () => {
     const [nativeLang, setNativeLang] = useLS(lsConf.nativeLang)
 
     const nativeRef = useRef<HTMLInputElement>(null)
+    const words = useLiveQuery(() => getWords())
 
-    const words = useLiveQuery(() => db.words.toArray())
+    const collection = useLiveQuery(() => getCollection())
 
     const filteredWords = useMemo(
         () =>
@@ -49,14 +51,17 @@ export const ListPage = () => {
 
     const add = useCallback(async () => {
         if (!native || !translation) return
-
         if (!!filteredWords?.length) return setShowNotification(true)
+        const collection = await getCollection()
+        if (!collection) return
 
         await db.words.add({
             native: normalize(native),
             translation: normalize(translation),
             progress: 0,
+            collectionId: collection.id || 0,
         })
+
         setNative('')
         setTranslation('')
     }, [native, translation, filteredWords])
@@ -86,6 +91,11 @@ export const ListPage = () => {
         document.addEventListener('keypress', handler)
         return () => document.removeEventListener('keypress', handler)
     }, [add, nativeRef])
+
+    if (!collection)
+        return (
+            <Nothing msg="Collection doesn't exist. You should create a collection into settings" />
+        )
 
     return (
         <>

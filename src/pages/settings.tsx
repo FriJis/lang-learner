@@ -8,15 +8,24 @@ import {
     MenuItem,
     Select,
     Slider,
+    TextField,
     Typography,
 } from '@mui/material'
+import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
-import { ChangeEvent, useCallback, useState } from 'react'
+import { ChangeEvent, FC, useCallback, useState } from 'react'
 import { langs, lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
+import { Collection } from '../types/collection'
 import { ExportedWord } from '../types/word'
-import { asyncMap, download, jsonParse, readTextFromFile } from '../utils'
-import { db } from '../utils/db'
+import {
+    asyncMap,
+    download,
+    jsonParse,
+    normalize,
+    readTextFromFile,
+} from '../utils'
+import { db, getCollection, getWords } from '../utils/db'
 
 export const SettingsPage = () => {
     const [err, setErr] = useState(false)
@@ -28,27 +37,34 @@ export const SettingsPage = () => {
     const [translationLang, setTranslationLang] = useLS(lsConf.translationLang)
     const [learnFirst, setLearnFirst] = useLS(lsConf.learn_first)
 
+    const collections = useLiveQuery(() => db.collections.toArray())
+
     const exportWords = useCallback(async () => {
-        const words = await db.words.toArray()
+        const collection = await getCollection()
+        if (!collection) return
+        const words = await getWords()
+
         download(
             JSON.stringify(
                 words.map(
                     (w) => [w.native, w.translation, w.progress] as ExportedWord
                 )
             ),
-            'words.json',
+            `${collection.name}_words.json`,
             'application/json'
         )
     }, [])
 
     const parse = useCallback(async (exported: ExportedWord[]) => {
-        const words = await db.words.toArray()
+        const collection = await getCollection()
+        if (!collection) return
+        const words = await getWords()
 
         const mapByNative = new Map(words.map((w) => [w.native, w]))
         const mapByTranslation = new Map(words.map((w) => [w.translation, w]))
 
-        db.transaction('rw', db.words, () =>
-            asyncMap(exported, ([native, translation, progress]) => {
+        db.transaction('rw', db.words, async () => {
+            await asyncMap(exported, ([native, translation, progress]) => {
                 if (native.length <= 0) throw new Error()
                 if (translation.length <= 0) throw new Error()
 
@@ -61,12 +77,13 @@ export const SettingsPage = () => {
                     return db.words.update(exTranslation, { native, progress })
 
                 return db.words.add({
-                    translation: translation.trim().toLowerCase(),
-                    native: native.trim().toLowerCase(),
+                    translation: normalize(translation),
+                    native: normalize(native),
                     progress,
+                    collectionId: collection.id || 0,
                 })
             })
-        ).catch(() => {
+        }).catch(() => {
             throw new Error()
         })
     }, [])
@@ -184,12 +201,12 @@ export const SettingsPage = () => {
                     <Grid container sx={{ marginTop: '10px' }}>
                         <Grid item xs={6}>
                             <Button variant="contained" onClick={exportWords}>
-                                Export words
+                                Export collection
                             </Button>
                         </Grid>
                         <Grid item xs={6}>
                             <Button component="label">
-                                Import words
+                                Import into current collection
                                 <input
                                     onChange={importWords}
                                     hidden
@@ -202,6 +219,90 @@ export const SettingsPage = () => {
                     </Grid>
                 </CardContent>
             </Card>
+            <Card style={{ marginTop: 10 }}>
+                <CardContent>
+                    <Typography variant="h4">Collections</Typography>
+                    {collections?.map((collection) => (
+                        <CollectionSetting
+                            collection={collection}
+                            key={collection.id}
+                        ></CollectionSetting>
+                    ))}
+                    <CollectionSetting></CollectionSetting>
+                </CardContent>
+            </Card>
         </>
+    )
+}
+
+const CollectionSetting: FC<{ collection?: Collection }> = ({ collection }) => {
+    const [newName, setNewName] = useState(collection?.name || '')
+
+    const update = useCallback(async () => {
+        const activeCollection = await getCollection()
+
+        setNewName('')
+        if (!collection)
+            return db.collections.add({
+                active: !activeCollection ? true : false,
+                name: newName,
+            })
+        db.collections.update(collection, { name: newName })
+    }, [collection, newName])
+
+    const del = useCallback(() => {
+        if (!collection) return
+        const confirmation = window.confirm(
+            'Do you want to delete this collection? It will lead to delete all depending words'
+        )
+        if (!confirmation) return
+        db.collections.delete(collection.id || 0)
+    }, [collection])
+
+    const changeActive = useCallback(async () => {
+        if (!collection) return
+        await db.collections.toCollection().modify((collection) => {
+            collection.active = false
+        })
+        db.collections.update(collection, { active: true })
+    }, [collection])
+
+    return (
+        <Grid container alignItems="center" sx={{ mt: '10px' }}>
+            <Grid item xs={9}>
+                <TextField
+                    variant="outlined"
+                    fullWidth
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="Name..."
+                ></TextField>
+            </Grid>
+            <Grid item xs={1} display="flex" justifyContent="center">
+                {!!newName && collection?.name !== newName && (
+                    <Button onClick={update} color="success">
+                        <i className="fa-solid fa-floppy-disk"></i>
+                    </Button>
+                )}
+            </Grid>
+            <Grid item xs={1} display="flex" justifyContent="center">
+                {!!collection && (
+                    <Button
+                        onClick={changeActive}
+                        color={collection.active ? 'success' : undefined}
+                        variant="contained"
+                    >
+                        <i className="fa-solid fa-eye"></i>
+                    </Button>
+                )}
+            </Grid>
+            <Grid item xs={1} display="flex" justifyContent="center">
+                {!!collection && (
+                    <Button color="error" onClick={del}>
+                        <i className="fa-solid fa-trash"></i>
+                    </Button>
+                )}
+            </Grid>
+        </Grid>
     )
 }

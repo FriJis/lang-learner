@@ -18,6 +18,7 @@ import { usePressBtn } from '../hooks/usePressBtn'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { useStopWatch } from '../hooks/useStopWatch'
+import { Nothing } from '../components/Nothing'
 
 export const WritePage = () => {
     const [word, setWord] = useState<Word | null>(null)
@@ -104,6 +105,8 @@ export const WritePage = () => {
     useEffect(() => {
         generate()
     }, [generate])
+
+    if (!word) return <Nothing></Nothing>
 
     return (
         <>

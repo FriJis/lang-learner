@@ -10,12 +10,13 @@ import {
 } from '@mui/material'
 import _ from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
+import { Nothing } from '../components/Nothing'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { useUpdateProgress } from '../hooks/useUpdateProgress'
 import { Word } from '../types/word'
 import { getRandomValueFromArray, say } from '../utils'
-import { composeWords, db } from '../utils/db'
+import { composeWords } from '../utils/db'
 
 export const LearnPage = () => {
     const [word, setWord] = useState<Word | null>(null)
@@ -40,7 +41,7 @@ export const LearnPage = () => {
         const randomWord = getRandomValueFromArray(wordsToLearn)
         if (!randomWord) return setTranslations([])
 
-        const variants = await db.words.where('progress').below(1).toArray()
+        const variants = await composeWords()
         const preparedWords = _.slice(
             _.shuffle(variants.filter((v) => v.id !== randomWord.id)),
             0,
@@ -77,14 +78,7 @@ export const LearnPage = () => {
         generate()
     }, [generate])
 
-    if (translations.length <= 0)
-        return (
-            <Card>
-                <CardContent>
-                    <Typography align="center">Nothing to learn</Typography>
-                </CardContent>
-            </Card>
-        )
+    if (translations.length <= 0) return <Nothing />
 
     return (
         <>

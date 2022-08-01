@@ -6,6 +6,7 @@ import {
     Typography,
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
+import { Nothing } from '../components/Nothing'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { Word } from '../types/word'
@@ -47,7 +48,7 @@ export const ListenPage = () => {
         return () => clearInterval(id)
     }, [playing, current, nativeLang, translationLang])
 
-    if (!current) return null
+    if (!current) return <Nothing />
 
     return (
         <Card>

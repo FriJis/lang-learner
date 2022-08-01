@@ -8,11 +8,12 @@ import {
 } from '@mui/material'
 import _ from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
+import { Nothing } from '../components/Nothing'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { Word } from '../types/word'
 import { getRandomValueFromArray, say } from '../utils'
-import { db } from '../utils/db'
+import { db, getWords } from '../utils/db'
 
 export const ControlWorkPage = () => {
     const [checkedWords, setCheckedWords] = useState<number[]>([])
@@ -28,7 +29,8 @@ export const ControlWorkPage = () => {
     const generate = useCallback(async () => {
         const checkedSet = new Set(checkedWords)
 
-        const words = await db.words.toArray()
+        const words = await getWords()
+
         const variants = words.filter((word) => {
             if (!word.id) return false
             if (word.progress < 1) return false
@@ -65,14 +67,7 @@ export const ControlWorkPage = () => {
         generate()
     }, [generate])
 
-    if (!word)
-        return (
-            <Card>
-                <CardContent>
-                    <Typography align="center">Nothing to learn</Typography>
-                </CardContent>
-            </Card>
-        )
+    if (!word) return <Nothing />
 
     return (
         <>
