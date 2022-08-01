@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { getCollection } from './db'
 
 export function getRandomValueFromArray<T>(arr: T[]): T {
     return arr[_.random(0, arr.length - 1)]
@@ -20,6 +21,15 @@ export function say(text: string, lang?: string) {
     message.lang = lang || 'en-EN'
     message.text = text
     window.speechSynthesis.speak(message)
+}
+
+export async function sayNative(text: string) {
+    const collection = await getCollection()
+    say(text, collection?.nativeLang)
+}
+export async function sayTranslation(text: string) {
+    const collection = await getCollection()
+    say(text, collection?.translationLang)
 }
 
 export const normalize = (text: string) => text.trim().toLocaleLowerCase()

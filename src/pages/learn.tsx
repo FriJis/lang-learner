@@ -15,7 +15,7 @@ import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { useUpdateProgress } from '../hooks/useUpdateProgress'
 import { Word } from '../types/word'
-import { getRandomValueFromArray, say } from '../utils'
+import { getRandomValueFromArray, sayNative, sayTranslation } from '../utils'
 import { composeWords } from '../utils/db'
 
 export const LearnPage = () => {
@@ -26,8 +26,6 @@ export const LearnPage = () => {
     const [translations, setTranslations] = useState<string[]>([])
 
     const [countWords] = useLS(lsConf.count_words)
-    const [translationLang] = useLS(lsConf.translationLang)
-    const [nativeLang] = useLS(lsConf.nativeLang)
     const [learnFirst] = useLS(lsConf.learn_first)
 
     const updater = useUpdateProgress(word)
@@ -64,14 +62,14 @@ export const LearnPage = () => {
             if (word.translation === translation) {
                 await updater?.success()
             } else {
-                say(word.native, nativeLang)
-                say(word.translation, translationLang)
+                sayNative(word.native)
+                sayTranslation(word.translation)
                 setShowPrev(true)
                 await updater?.fail()
             }
             setPrev(word)
         },
-        [word, updater, nativeLang, translationLang]
+        [word, updater]
     )
 
     useEffect(() => {
@@ -91,7 +89,7 @@ export const LearnPage = () => {
                 <CardContent>
                     <Typography
                         align="center"
-                        onMouseEnter={() => say(word?.native || '', nativeLang)}
+                        onMouseEnter={() => sayNative(word?.native || '')}
                         onMouseLeave={() => window.speechSynthesis.cancel()}
                     >
                         {word?.native || ''}
@@ -104,7 +102,7 @@ export const LearnPage = () => {
                                 <Button
                                     color="success"
                                     onClick={() => compare(t)}
-                                    onMouseEnter={() => say(t, translationLang)}
+                                    onMouseEnter={() => sayTranslation(t)}
                                     onMouseLeave={() =>
                                         window.speechSynthesis.cancel()
                                     }

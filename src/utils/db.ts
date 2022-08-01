@@ -29,6 +29,9 @@ export class MySubClassedDexie extends Dexie {
                         word.collectionId = 1
                     })
             })
+        this.version(3).stores({
+            collections: '++id, name, active, nativeLang, translationLang',
+        })
     }
 }
 

@@ -10,7 +10,7 @@ import { Nothing } from '../components/Nothing'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { Word } from '../types/word'
-import { getRandomValueFromArray, say } from '../utils'
+import { getRandomValueFromArray, sayNative, sayTranslation } from '../utils'
 import { composeWords } from '../utils/db'
 
 export const ListenPage = () => {
@@ -18,9 +18,6 @@ export const ListenPage = () => {
     const [current, setCurrent] = useState<Word | null>(null)
     const [prev, setPrev] = useState<Word | null>(null)
     const [learnFirst] = useLS(lsConf.learn_first)
-
-    const [nativeLang] = useLS(lsConf.nativeLang)
-    const [translationLang] = useLS(lsConf.translationLang)
 
     const generate = useCallback(async () => {
         const words = await composeWords({
@@ -39,14 +36,14 @@ export const ListenPage = () => {
     useEffect(() => {
         if (!current) return
         if (!playing) return
-        say(current.native, nativeLang)
-        say(current.translation, translationLang)
+        sayNative(current.native)
+        sayTranslation(current.translation)
         const id = setInterval(() => {
             if (window.speechSynthesis.speaking) return
             setPrev(current)
         }, 100)
         return () => clearInterval(id)
-    }, [playing, current, nativeLang, translationLang])
+    }, [playing, current])
 
     if (!current) return <Nothing />
 

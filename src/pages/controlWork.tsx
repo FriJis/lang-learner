@@ -12,7 +12,7 @@ import { Nothing } from '../components/Nothing'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { Word } from '../types/word'
-import { getRandomValueFromArray, say } from '../utils'
+import { getRandomValueFromArray, sayNative, sayTranslation } from '../utils'
 import { db, getWords } from '../utils/db'
 
 export const ControlWorkPage = () => {
@@ -23,8 +23,6 @@ export const ControlWorkPage = () => {
     const [translations, setTranslations] = useState<string[]>([])
 
     const [countWords] = useLS(lsConf.count_words)
-    const [translationLang] = useLS(lsConf.translationLang)
-    const [nativeLang] = useLS(lsConf.nativeLang)
 
     const generate = useCallback(async () => {
         const checkedSet = new Set(checkedWords)
@@ -75,7 +73,7 @@ export const ControlWorkPage = () => {
                 <CardContent>
                     <Typography
                         align="center"
-                        onMouseEnter={() => say(word?.native || '', nativeLang)}
+                        onMouseEnter={() => sayNative(word?.native || '')}
                         onMouseLeave={() => window.speechSynthesis.cancel()}
                     >
                         {word?.native || ''}
@@ -89,9 +87,7 @@ export const ControlWorkPage = () => {
                                     <Button
                                         color="success"
                                         onClick={() => compare(t)}
-                                        onMouseEnter={() =>
-                                            say(t, translationLang)
-                                        }
+                                        onMouseEnter={() => sayTranslation(t)}
                                         onMouseLeave={() =>
                                             window.speechSynthesis.cancel()
                                         }

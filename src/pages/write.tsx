@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Word } from '../types/word'
-import { getRandomValueFromArray, say } from '../utils'
+import { getRandomValueFromArray, sayNative, sayTranslation } from '../utils'
 import { composeWords } from '../utils/db'
 import { compareTwoStrings } from 'string-similarity'
 import { useUpdateProgress } from '../hooks/useUpdateProgress'
@@ -29,8 +29,6 @@ export const WritePage = () => {
     const stopWatch = useStopWatch()
 
     const [learnFirst] = useLS(lsConf.learn_first)
-    const [translationLang] = useLS(lsConf.translationLang)
-    const [nativeLang] = useLS(lsConf.nativeLang)
 
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -58,9 +56,9 @@ export const WritePage = () => {
 
         setPrev(word)
         setShowPrev(true)
-        say(word.native, nativeLang)
-        say(word.translation, translationLang)
-    }, [result, word, updater, helper, translationLang, nativeLang])
+        sayNative(word.native)
+        sayTranslation(word.translation)
+    }, [result, word, updater, helper])
 
     const help = useCallback(() => {
         if (!word) return
@@ -68,23 +66,23 @@ export const WritePage = () => {
         const nextHint = word.translation.slice(0, nextIndex)
         if (helper === word.translation) {
             updater.fail()
-            say(word.native, nativeLang)
-            say(word.translation, translationLang)
+            sayNative(word.native)
+            sayTranslation(word.translation)
             return setPrev(word)
         }
         setHelper(nextHint)
         inputRef.current?.click()
-    }, [helper, word, inputRef, updater, nativeLang, translationLang])
+    }, [helper, word, inputRef, updater])
 
     const idk = useCallback(() => {
         if (!word) return
         setPrev(word)
         setShowPrev(true)
-        say(word.native, nativeLang)
-        say(word.translation, translationLang)
+        sayNative(word.native)
+        sayTranslation(word.translation)
         updater.fail()
         generate()
-    }, [word, nativeLang, translationLang, generate, updater])
+    }, [word, generate, updater])
 
     usePressBtn(
         useCallback(

@@ -13,8 +13,8 @@ import {
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
-import { ChangeEvent, FC, useCallback, useState } from 'react'
-import { langs, lsConf } from '../conf'
+import { ChangeEvent, FC, useCallback, useMemo, useState } from 'react'
+import { lsConf, mappedLangs } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { Collection } from '../types/collection'
 import { ExportedWord } from '../types/word'
@@ -33,11 +33,24 @@ export const SettingsPage = () => {
     const [countWords, setCountWords] = useLS(lsConf.count_words)
     const [successOffset, setSuccessOffset] = useLS(lsConf.success_offset)
     const [mistakeOffset, setMistakeOffset] = useLS(lsConf.mistake_offset)
-    const [nativeLang, setNativeLang] = useLS(lsConf.nativeLang)
-    const [translationLang, setTranslationLang] = useLS(lsConf.translationLang)
     const [learnFirst, setLearnFirst] = useLS(lsConf.learn_first)
 
     const collections = useLiveQuery(() => db.collections.toArray())
+    const collection = useLiveQuery(() => getCollection())
+    const nativeLang = useMemo(() => collection?.nativeLang || '', [collection])
+    const translationLang = useMemo(
+        () => collection?.translationLang || '',
+        [collection]
+    )
+    console.log(nativeLang)
+
+    const setLang = useCallback(
+        (type: 'nativeLang' | 'translationLang', lang: string) => {
+            if (!collection) return
+            db.collections.update(collection, { [type]: lang })
+        },
+        [collection]
+    )
 
     const exportWords = useCallback(async () => {
         const collection = await getCollection()
@@ -171,12 +184,14 @@ export const SettingsPage = () => {
 
                             <Select
                                 value={nativeLang}
-                                onChange={(e) => setNativeLang(e.target.value)}
+                                onChange={(e) =>
+                                    setLang('nativeLang', e.target.value)
+                                }
                                 fullWidth
                             >
-                                {langs.map((l) => (
-                                    <MenuItem value={l} key={l}>
-                                        {l}
+                                {mappedLangs.map((l, i) => (
+                                    <MenuItem value={l.value} key={i}>
+                                        {l.label}
                                     </MenuItem>
                                 ))}
                             </Select>
@@ -186,13 +201,13 @@ export const SettingsPage = () => {
                             <Select
                                 value={translationLang}
                                 onChange={(e) =>
-                                    setTranslationLang(e.target.value)
+                                    setLang('translationLang', e.target.value)
                                 }
                                 fullWidth
                             >
-                                {langs.map((l) => (
-                                    <MenuItem value={l} key={l}>
-                                        {l}
+                                {mappedLangs.map((l, i) => (
+                                    <MenuItem value={l.value} key={i}>
+                                        {l.label}
                                     </MenuItem>
                                 ))}
                             </Select>
