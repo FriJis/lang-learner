@@ -83,7 +83,7 @@ export const LearnPage = () => {
             <Dialog onClose={() => setShowPrev(false)} open={showPrev}>
                 <DialogTitle>
                     {prev?.native} - {prev?.translation}{' '}
-                    {!!prev?.info && `(${prev.info})`}
+                    {!!prev?.info ? `(${prev.info})` : ''}
                 </DialogTitle>
             </Dialog>
             <Card>
@@ -93,7 +93,8 @@ export const LearnPage = () => {
                         onMouseEnter={() => sayNative(word?.native || '')}
                         onMouseLeave={() => window.speechSynthesis.cancel()}
                     >
-                        {word?.native || ''} {!!word?.info && `(${word.info})`}
+                        {word?.native || ''}{' '}
+                        {!!word?.info ? `(${word.info})` : ''}
                     </Typography>
                 </CardContent>
                 <CardActions>

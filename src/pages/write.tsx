@@ -112,7 +112,7 @@ export const WritePage = () => {
                 open={showPrev}
                 onClose={() => setShowPrev(false)}
                 message={`${prev?.native} - ${prev?.translation} ${
-                    !!word.info && `(${word.info})`
+                    !!word.info ? `(${word.info})` : ''
                 }`}
                 autoHideDuration={5000}
             ></Snackbar>
@@ -121,7 +121,7 @@ export const WritePage = () => {
                     <CardContent>
                         <Typography>Stopwatch: {stopWatch}</Typography>
                         <Typography>
-                            {word?.native} {!!word.info && `(${word.info})`}
+                            {word?.native} {!!word.info ? `(${word.info})` : ''}
                         </Typography>
                         {helper.length > 0 && (
                             <Typography color={'gray'}>
