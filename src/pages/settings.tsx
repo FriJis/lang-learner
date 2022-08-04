@@ -1,7 +1,10 @@
 import {
+    Backdrop,
     Button,
     Card,
+    CardActions,
     CardContent,
+    CircularProgress,
     Dialog,
     DialogTitle,
     Grid,
@@ -29,6 +32,7 @@ import { db, getCollection, getWords } from '../utils/db'
 
 export const SettingsPage = () => {
     const [err, setErr] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     const [countWords, setCountWords] = useLS(lsConf.count_words)
     const [successOffset, setSuccessOffset] = useLS(lsConf.success_offset)
@@ -96,18 +100,20 @@ export const SettingsPage = () => {
                         })
 
                     const exTranslation = mapByTranslation.get(translation)
-                    if (exTranslation)
-                        return db.words.update(exTranslation, {
-                            native,
-                            progress,
-                        })
 
-                    return db.words.add({
+                    const data = {
                         translation: normalize(translation),
                         native: normalize(native),
                         progress,
-                        collectionId: collection.id || 0,
                         info,
+                    }
+
+                    if (exTranslation)
+                        return db.words.update(exTranslation, data)
+
+                    return db.words.add({
+                        ...data,
+                        collectionId: collection.id || 0,
                     })
                 }
             )
@@ -133,11 +139,47 @@ export const SettingsPage = () => {
         [parse]
     )
 
+    const deleteWords = useCallback(async () => {
+        const confirmation = window.confirm('are you sure?')
+        if (!confirmation) return
+        setLoading(true)
+        try {
+            const words = await getWords()
+            await Promise.all(
+                words.map(
+                    (word) =>
+                        !_.isUndefined(word.id) && db.words.delete(word.id)
+                )
+            )
+        } catch (error) {
+            console.error(error)
+        }
+        setLoading(false)
+    }, [])
+
+    const resetProgress = useCallback(async () => {
+        const confirmation = window.confirm('are you sure?')
+        if (!confirmation) return
+        setLoading(true)
+        try {
+            const words = await getWords()
+            await Promise.all(
+                words.map((word) => db.words.update(word, { progress: 0 }))
+            )
+        } catch (error) {
+            console.error(error)
+        }
+        setLoading(false)
+    }, [])
+
     return (
         <>
             <Dialog open={err} onClose={() => setErr(false)}>
                 <DialogTitle>Something is wrong</DialogTitle>
             </Dialog>
+            <Backdrop open={loading}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <Card>
                 <CardContent>
                     <Typography>
@@ -260,6 +302,19 @@ export const SettingsPage = () => {
                     ))}
                     <CollectionSetting></CollectionSetting>
                 </CardContent>
+            </Card>
+            <Card style={{ marginTop: 10 }}>
+                <CardContent>
+                    <Typography variant="h4">Operations with words</Typography>
+                </CardContent>
+                <CardActions>
+                    <Button color="error" onClick={resetProgress}>
+                        Reset the progress of each word from this collection
+                    </Button>
+                    <Button color="error" onClick={deleteWords}>
+                        Remove all words from this collection
+                    </Button>
+                </CardActions>
             </Card>
         </>
     )
