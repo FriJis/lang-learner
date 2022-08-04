@@ -59,7 +59,13 @@ export const SettingsPage = () => {
         download(
             JSON.stringify(
                 words.map(
-                    (w) => [w.native, w.translation, w.progress] as ExportedWord
+                    (w) =>
+                        [
+                            w.native,
+                            w.translation,
+                            w.progress,
+                            w.info || '',
+                        ] as ExportedWord
                 )
             ),
             `${collection.name}_words.json`,
@@ -76,25 +82,35 @@ export const SettingsPage = () => {
         const mapByTranslation = new Map(words.map((w) => [w.translation, w]))
 
         db.transaction('rw', db.words, async () => {
-            await asyncMap(exported, ([native, translation, progress]) => {
-                if (native.length <= 0) throw new Error()
-                if (translation.length <= 0) throw new Error()
+            await asyncMap(
+                exported,
+                ([native, translation, progress, info]) => {
+                    if (native.length <= 0) throw new Error()
+                    if (translation.length <= 0) throw new Error()
 
-                const exNative = mapByNative.get(native)
-                if (exNative)
-                    return db.words.update(exNative, { translation, progress })
+                    const exNative = mapByNative.get(native)
+                    if (exNative)
+                        return db.words.update(exNative, {
+                            translation,
+                            progress,
+                        })
 
-                const exTranslation = mapByTranslation.get(translation)
-                if (exTranslation)
-                    return db.words.update(exTranslation, { native, progress })
+                    const exTranslation = mapByTranslation.get(translation)
+                    if (exTranslation)
+                        return db.words.update(exTranslation, {
+                            native,
+                            progress,
+                        })
 
-                return db.words.add({
-                    translation: normalize(translation),
-                    native: normalize(native),
-                    progress,
-                    collectionId: collection.id || 0,
-                })
-            })
+                    return db.words.add({
+                        translation: normalize(translation),
+                        native: normalize(native),
+                        progress,
+                        collectionId: collection.id || 0,
+                        info,
+                    })
+                }
+            )
         }).catch(() => {
             throw new Error()
         })

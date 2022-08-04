@@ -10,5 +10,6 @@ export interface Word {
 type native = string
 type translation = string
 type progress = number
+type info = string
 
-export type ExportedWord = [native, translation, progress]
+export type ExportedWord = [native, translation, progress, info | undefined]
