@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import _ from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
+import { Info } from '../components/Info'
 import { Nothing } from '../components/Nothing'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
@@ -94,7 +95,7 @@ export const LearnPage = () => {
                         onMouseLeave={() => window.speechSynthesis.cancel()}
                     >
                         {word?.native || ''}{' '}
-                        {!!word?.info ? `(${word.info})` : ''}
+                        {!!word?.info && <Info word={word}></Info>}
                     </Typography>
                 </CardContent>
                 <CardActions>

@@ -73,6 +73,8 @@ export const ListPage = () => {
     return (
         <>
             <WordEditor
+                nativeState={[native, setNative]}
+                translationState={[translation, setTranslation]}
                 show={showAdd}
                 onClose={() => setShowAdd(false)}
             ></WordEditor>
@@ -176,6 +178,9 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
     const [showEditor, setShowEditor] = useState(false)
     const [newProgress, setNewProgress] = useState(word.progress)
 
+    const nativeState = useState('')
+    const translationState = useState('')
+
     const del = useCallback(() => db.words.delete(word.id || 0), [word.id])
 
     const updateProgress = useCallback(
@@ -193,6 +198,8 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
                 word={word}
                 show={showEditor}
                 onClose={() => setShowEditor(false)}
+                nativeState={nativeState}
+                translationState={translationState}
             ></WordEditor>
             <TableRow key={word.id} onFocus={() => {}}>
                 <TableCell>

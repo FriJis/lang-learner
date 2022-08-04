@@ -6,24 +6,27 @@ import {
     TextField,
 } from '@mui/material'
 import { FC, useCallback, useEffect, useState } from 'react'
+import { State } from '../types/app'
 import { Word } from '../types/word'
 import { normalize } from '../utils'
 import { db, getCollection } from '../utils/db'
 
 export const WordEditor: FC<{
     word?: Word
+    nativeState: State<string>
+    translationState: State<string>
     show: boolean
     onClose: () => void
-}> = ({ word, onClose, show }) => {
-    const [native, setNative] = useState(word?.native || '')
-    const [translation, setTranslation] = useState(word?.translation || '')
+}> = ({ word, onClose, show, nativeState, translationState }) => {
+    const [native, setNative] = nativeState
+    const [translation, setTranslation] = translationState
     const [info, setInfo] = useState(word?.info || '')
 
     useEffect(() => {
         setNative(word?.native || '')
         setTranslation(word?.translation || '')
         setInfo(word?.info || '')
-    }, [word])
+    }, [word, setNative, setTranslation])
 
     const save = useCallback(async () => {
         const collection = await getCollection()
@@ -49,7 +52,7 @@ export const WordEditor: FC<{
         setTranslation('')
 
         onClose()
-    }, [word, native, translation, onClose, info])
+    }, [word, native, translation, onClose, info, setNative, setTranslation])
 
     return (
         <Dialog open={show} onClose={onClose}>

@@ -19,6 +19,7 @@ import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { useStopWatch } from '../hooks/useStopWatch'
 import { Nothing } from '../components/Nothing'
+import { Info } from '../components/Info'
 
 export const WritePage = () => {
     const [word, setWord] = useState<Word | null>(null)
@@ -121,7 +122,7 @@ export const WritePage = () => {
                     <CardContent>
                         <Typography>Stopwatch: {stopWatch}</Typography>
                         <Typography>
-                            {word?.native} {!!word.info ? `(${word.info})` : ''}
+                            {word?.native} <Info word={word}></Info>
                         </Typography>
                         {helper.length > 0 && (
                             <Typography color={'gray'}>
