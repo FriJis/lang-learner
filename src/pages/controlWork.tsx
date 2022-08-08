@@ -19,6 +19,7 @@ import { db, getWords } from '../utils/db'
 export const ControlWorkPage = () => {
     const [checkedWords, setCheckedWords] = useState<number[]>([])
     const [word, setWord] = useState<Word | null>(null)
+    const [sessionCountWords, setSessionCountWords] = useState(0)
 
     const [showTranslations, setShowTranslations] = useState(false)
     const [translations, setTranslations] = useState<string[]>([])
@@ -66,12 +67,25 @@ export const ControlWorkPage = () => {
         generate()
     }, [generate])
 
+    useEffect(() => {
+        const f = async () => {
+            const words = await getWords()
+            setSessionCountWords(
+                words.filter((word) => word.progress >= 1).length
+            )
+        }
+        f()
+    }, [])
+
     if (!word) return <Nothing />
 
     return (
         <>
             <Card>
                 <CardContent>
+                    <Typography align="center">
+                        {`${checkedWords.length} / ${sessionCountWords}`}
+                    </Typography>
                     <Typography
                         align="center"
                         onMouseEnter={() => sayNative(word?.native || '')}
