@@ -23,6 +23,10 @@ export const lsConf = {
         name: 'learn_first',
         def: 15,
     },
+    control_work_timer: {
+        name: 'control_work_timer',
+        def: 1,
+    },
 }
 
 export const langs = [

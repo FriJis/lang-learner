@@ -38,6 +38,9 @@ export const SettingsPage = () => {
     const [successOffset, setSuccessOffset] = useLS(lsConf.success_offset)
     const [mistakeOffset, setMistakeOffset] = useLS(lsConf.mistake_offset)
     const [learnFirst, setLearnFirst] = useLS(lsConf.learn_first)
+    const [controlWorkTimer, setControlWorkTimer] = useLS(
+        lsConf.control_work_timer
+    )
 
     const collections = useLiveQuery(() => db.collections.toArray())
     const collection = useLiveQuery(() => getCollection())
@@ -233,6 +236,21 @@ export const SettingsPage = () => {
                         value={mistakeOffset}
                         onChange={(e, v) =>
                             setMistakeOffset(_.isArray(v) ? v[0] : v)
+                        }
+                    ></Slider>
+                    <Typography>
+                        The difference in hours between control works:{' '}
+                        {controlWorkTimer > 0
+                            ? controlWorkTimer
+                            : 'Has no timer'}
+                    </Typography>
+                    <Slider
+                        min={0}
+                        max={72}
+                        step={1}
+                        value={controlWorkTimer}
+                        onChange={(e, v) =>
+                            setControlWorkTimer(_.isArray(v) ? v[0] : v)
                         }
                     ></Slider>
                     <Grid container>

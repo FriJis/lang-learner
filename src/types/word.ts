@@ -5,6 +5,7 @@ export interface Word {
     translation: string
     progress: number
     info?: string
+    lastControllWork?: string
 }
 
 type native = string
