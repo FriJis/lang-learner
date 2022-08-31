@@ -38,6 +38,7 @@ export const SettingsPage = () => {
     const [successOffset, setSuccessOffset] = useLS(lsConf.success_offset)
     const [mistakeOffset, setMistakeOffset] = useLS(lsConf.mistake_offset)
     const [learnFirst, setLearnFirst] = useLS(lsConf.learn_first)
+    const [translator, setTranslator] = useLS(lsConf.translator)
     const [controlWorkTimer, setControlWorkTimer] = useLS(
         lsConf.control_work_timer
     )
@@ -253,6 +254,17 @@ export const SettingsPage = () => {
                             setControlWorkTimer(_.isArray(v) ? v[0] : v)
                         }
                     ></Slider>
+                    <Typography>Link for translation helper</Typography>
+                    <Typography>
+                        {'{{nativeLang}}, {{translationLang}}, {{text}}'}
+                    </Typography>
+                    <TextField
+                        variant="outlined"
+                        fullWidth
+                        value={translator}
+                        onChange={(e) => setTranslator(e.target.value)}
+                        placeholder="Name..."
+                    ></TextField>
                     <Grid container>
                         <Grid item xs={6}>
                             <Typography>Native language</Typography>

@@ -27,6 +27,10 @@ export const lsConf = {
         name: 'control_work_timer',
         def: 1,
     },
+    translator: {
+        name: 'translator',
+        def: 'https://translate.google.com/?sl={{nativeLang}}&tl={{translationLang}}&text={{text}}&op=translate',
+    },
 }
 
 export const langs = [
@@ -185,3 +189,7 @@ export const langs = [
 ]
 
 export const mappedLangs = langs.map(([label, value]) => ({ label, value }))
+
+export const mapLangsByKey = new Map(
+    langs.map((lang) => lang.reverse()) as [string, string][]
+)

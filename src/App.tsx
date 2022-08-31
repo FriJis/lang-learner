@@ -5,6 +5,7 @@ import { FaqPage } from './pages/faq'
 import { LearnPage } from './pages/learn'
 import { ListPage } from './pages/list'
 import { ListenPage } from './pages/listen'
+import { ReadPage } from './pages/read'
 import { SettingsPage } from './pages/settings'
 import { WritePage } from './pages/write'
 
@@ -16,6 +17,7 @@ enum Pages {
     listening = 'listening',
     controlWork = 'controlWork',
     faq = 'faq',
+    read = 'read',
 }
 
 function App() {
@@ -28,6 +30,7 @@ function App() {
                 <Tab label="Quiz" value={Pages.quiz}></Tab>
                 <Tab label="Write" value={Pages.write}></Tab>
                 <Tab label="Listening" value={Pages.listening}></Tab>
+                <Tab label="Read" value={Pages.read}></Tab>
                 <Tab label="Control Work" value={Pages.controlWork}></Tab>
                 <Tab label="Settings" value={Pages.settings}></Tab>
                 <Tab label="FAQ" value={Pages.faq}></Tab>
@@ -40,6 +43,7 @@ function App() {
             {page === Pages.controlWork && <ControlWorkPage></ControlWorkPage>}
             {page === Pages.settings && <SettingsPage></SettingsPage>}
             {page === Pages.faq && <FaqPage></FaqPage>}
+            {page === Pages.read && <ReadPage></ReadPage>}
         </Container>
     )
 }

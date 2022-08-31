@@ -7,6 +7,7 @@ import { Word } from '../types/word'
 export class MySubClassedDexie extends Dexie {
     words!: Table<Word>
     collections!: Table<Collection>
+    // texts!: Table<Texts>
 
     constructor() {
         super('app')
@@ -38,6 +39,9 @@ export class MySubClassedDexie extends Dexie {
         this.version(5).stores({
             words: '++id, collectionId, native, translation, progress, info, lastControllWork',
         })
+        // this.version(6).stores({
+        //     texts: '++id, text',
+        // })
     }
 }
 
