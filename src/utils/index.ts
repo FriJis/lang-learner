@@ -32,7 +32,11 @@ export async function sayTranslation(text: string) {
     say(text, collection?.translationLang)
 }
 
-export const normalize = (text: string) => text.trim().toLocaleLowerCase()
+// eslint-disable-next-line
+export const badRegEx = /\(|\)|\[|\\|\]|\/|\?|\=|\+|\=|\||\.|\,|\!|\@|\#|[0-9]/g
+
+export const normalize = (text: string) =>
+    text.trim().toLocaleLowerCase().replace(badRegEx, '')
 
 export function download(text: string, name: string, type: string) {
     const a = document.createElement('a')
@@ -64,13 +68,4 @@ export function jsonParse<T>(val: string): T | null {
 }
 
 export const regCheck = (text: string, toCheck: string) =>
-    !!text.match(
-        new RegExp(
-            toCheck.replace(
-                // eslint-disable-next-line
-                /\(|\)|\[|\\|\]|\/|\?|\=|\+|\=|\||\.|\,|\!|\@|\#/g,
-                ''
-            ),
-            'gim'
-        )
-    )
+    !!text.match(new RegExp(toCheck.replace(badRegEx, ''), 'gim'))
