@@ -11,6 +11,8 @@ import { FC, useCallback, useMemo, useState } from 'react'
 import { WordEditor } from '../components/WordEditor'
 import { lsConf, mapLangsByKey } from '../conf'
 import { useLS } from '../hooks/useLS'
+import { Word as IWord } from '../types/word'
+import { normalize } from '../utils'
 import { getCollection, getWords } from '../utils/db'
 
 export const ReadPage = () => {
@@ -27,18 +29,6 @@ export const ReadPage = () => {
     )
     const collection = useLiveQuery(() => getCollection())
     const words = useLiveQuery(() => getWords())
-    const mappedWord = useMemo(
-        () =>
-            new Map<string, string>([
-                ...(words || []).map(
-                    (w) => [w.native, w.translation] as [string, string]
-                ),
-                ...(words || []).map(
-                    (w) => [w.translation, w.native] as [string, string]
-                ),
-            ]),
-        [words]
-    )
 
     const nativeLang = useMemo(() => collection?.nativeLang, [collection])
     const translationLang = useMemo(
@@ -96,6 +86,7 @@ export const ReadPage = () => {
                             <Typography key={i}>
                                 {pr.map((word, i) => (
                                     <Word
+                                        words={words || []}
                                         word={word}
                                         key={i}
                                         showTranslation={showTranslation}
@@ -116,24 +107,27 @@ export const ReadPage = () => {
     )
 }
 
-const Word: FC<{ word: string; showTranslation: (text: string) => void }> = ({
-    word,
-    showTranslation,
-}) => {
-    const words = useLiveQuery(() => getWords())
+const Word: FC<{
+    word: string
+    showTranslation: (text: string) => void
+    words: IWord[]
+}> = ({ word, showTranslation, words }) => {
     const mappedWord = useMemo(
         () =>
             new Map<string, string>([
-                ...(words || []).map(
+                ...words.map(
                     (w) => [w.native, w.translation] as [string, string]
                 ),
-                ...(words || []).map(
+                ...words.map(
                     (w) => [w.translation, w.native] as [string, string]
                 ),
             ]),
         [words]
     )
-    const translation = useMemo(() => mappedWord.get(word), [word, mappedWord])
+    const translation = useMemo(
+        () => mappedWord.get(normalize(word)),
+        [word, mappedWord]
+    )
     if (!translation)
         return <span onClick={() => showTranslation(word)}>{`${word} `}</span>
     return (
