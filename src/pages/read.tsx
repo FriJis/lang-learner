@@ -138,7 +138,7 @@ const Word: FC<{ word: string; showTranslation: (text: string) => void }> = ({
         return <span onClick={() => showTranslation(word)}>{`${word} `}</span>
     return (
         <Tooltip title={translation}>
-            <span style={{ backgroundColor: 'red' }}>{`${word} `}</span>
+            <span style={{ backgroundColor: 'wheat' }}>{`${word} `}</span>
         </Tooltip>
     )
 }
