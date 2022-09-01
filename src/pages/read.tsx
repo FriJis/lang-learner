@@ -9,7 +9,7 @@ import {
     Typography,
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { WordEditor } from '../components/WordEditor'
 import { lsConf, mapLangsByKey } from '../conf'
 import { useLS } from '../hooks/useLS'
@@ -21,6 +21,7 @@ export const ReadPage = () => {
     const [nativeWord, setNativeWord] = useState('')
     const [translationWord, setTranslationWord] = useState('')
     const [showEditor, setShowEditor] = useState(false)
+    const textRef = useRef<HTMLPreElement>(null)
 
     const [reverse, setReverse] = useState(true)
 
@@ -64,6 +65,18 @@ export const ReadPage = () => {
         [finalNativeLang, finalTranslationLang, translator, reverse]
     )
 
+    useEffect(() => {
+        const { current } = textRef
+        if (!current) return
+        const h = () => {
+            const text = document.getSelection()?.toString()
+            if (!text) return
+            showTranslation(text)
+        }
+        current.addEventListener('mouseup', h)
+        return () => current.removeEventListener('mouseup', h)
+    }, [showTranslation, textRef])
+
     const listen = useCallback(() => {
         if (window.speechSynthesis.speaking)
             return window.speechSynthesis.cancel()
@@ -90,6 +103,7 @@ export const ReadPage = () => {
                         </IconButton>{' '}
                         to {mapLangsByKey.get(finalTranslationLang || '')}
                     </Typography>
+
                     <TextField
                         maxRows={5}
                         multiline
@@ -103,7 +117,16 @@ export const ReadPage = () => {
                     <Button onClick={pause}>resume\pause</Button>
                 </CardActions>
                 <CardContent>
-                    <Typography component="pre" whiteSpace={'pre-wrap'}>
+                    <Typography variant="h5" align="center">
+                        Select the text or words below to see translation.
+                    </Typography>
+                </CardContent>
+                <CardContent>
+                    <Typography
+                        component="pre"
+                        whiteSpace={'pre-wrap'}
+                        ref={textRef}
+                    >
                         {preparedText.map((pr, i) => (
                             <Typography key={i}>
                                 {pr.map((word, i) => (
@@ -111,7 +134,6 @@ export const ReadPage = () => {
                                         words={words || []}
                                         word={word}
                                         key={i}
-                                        showTranslation={showTranslation}
                                     ></Word>
                                 ))}
                             </Typography>
@@ -131,9 +153,8 @@ export const ReadPage = () => {
 
 const Word: FC<{
     word: string
-    showTranslation: (text: string) => void
     words: IWord[]
-}> = ({ word, showTranslation, words }) => {
+}> = ({ word, words }) => {
     const mappedWord = useMemo(
         () =>
             new Map<string, string>([
@@ -150,8 +171,7 @@ const Word: FC<{
         () => mappedWord.get(normalize(word)),
         [word, mappedWord]
     )
-    if (!translation)
-        return <span onClick={() => showTranslation(word)}>{`${word} `}</span>
+    if (!translation) return <span>{`${word} `}</span>
     return (
         <Tooltip title={translation}>
             <span style={{ backgroundColor: 'wheat' }}>{`${word} `}</span>
