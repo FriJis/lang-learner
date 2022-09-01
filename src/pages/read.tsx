@@ -1,5 +1,7 @@
 import {
+    Button,
     Card,
+    CardActions,
     CardContent,
     IconButton,
     TextField,
@@ -7,12 +9,12 @@ import {
     Typography,
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { FC, useCallback, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { WordEditor } from '../components/WordEditor'
 import { lsConf, mapLangsByKey } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { Word as IWord } from '../types/word'
-import { normalize } from '../utils'
+import { normalize, say } from '../utils'
 import { getCollection, getWords } from '../utils/db'
 
 export const ReadPage = () => {
@@ -61,6 +63,22 @@ export const ReadPage = () => {
         },
         [finalNativeLang, finalTranslationLang, translator, reverse]
     )
+
+    const listen = useCallback(() => {
+        if (window.speechSynthesis.speaking)
+            return window.speechSynthesis.cancel()
+        say(text, finalNativeLang)
+    }, [text, finalNativeLang])
+
+    const pause = useCallback(() => {
+        if (window.speechSynthesis.paused)
+            return window.speechSynthesis.resume()
+        window.speechSynthesis.pause()
+    }, [])
+
+    useEffect(() => {
+        return () => window.speechSynthesis.cancel()
+    }, [])
     return (
         <>
             <Card>
@@ -80,6 +98,10 @@ export const ReadPage = () => {
                         onChange={(e) => setText(e.target.value)}
                     ></TextField>
                 </CardContent>
+                <CardActions>
+                    <Button onClick={listen}>listen\stop</Button>
+                    <Button onClick={pause}>resume\pause</Button>
+                </CardActions>
                 <CardContent>
                     <Typography component="pre" whiteSpace={'pre-wrap'}>
                         {preparedText.map((pr, i) => (
