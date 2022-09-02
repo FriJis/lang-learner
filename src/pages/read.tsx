@@ -9,6 +9,7 @@ import {
     Typography,
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
+import _ from 'lodash'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { WordEditor } from '../components/WordEditor'
 import { lsConf } from '../conf'
@@ -27,13 +28,29 @@ export const ReadPage = () => {
     const [reverse, setReverse] = useState(true)
 
     const [text, setText] = useState('')
-    const preparedText = useMemo(
-        () => text.split(/\n/).map((pr) => pr.split(' ')),
-        [text]
-    )
-    const langs = useLangs(reverse)
-
     const words = useLiveQuery(() => getWords())
+
+    const preparedText = useMemo(() => {
+        const res = _.sortBy(words, (w) =>
+            reverse ? w.translation.length : w.native.length
+        )
+            .reverse()
+            ?.reduce<string>((acc, word) => {
+                const w = reverse ? word.translation : word.native
+                return acc.replace(
+                    new RegExp(_.escapeRegExp(` ${w}`), 'gim'),
+                    ` <<${w}>>`
+                )
+            }, text)
+        const splitted = res?.split('<<')
+
+        return (
+            splitted?.reduce<string[]>((acc, exp) => {
+                return [...acc, ...exp.split('>>')]
+            }, []) || []
+        )
+    }, [text, words, reverse])
+    const langs = useLangs(reverse)
 
     const [translator] = useLS(lsConf.translator)
 
@@ -117,15 +134,7 @@ export const ReadPage = () => {
                         ref={textRef}
                     >
                         {preparedText.map((pr, i) => (
-                            <Typography key={i}>
-                                {pr.map((word, i) => (
-                                    <Word
-                                        words={words || []}
-                                        word={word}
-                                        key={i}
-                                    ></Word>
-                                ))}
-                            </Typography>
+                            <Word words={words || []} word={pr} key={i}></Word>
                         ))}
                     </Typography>
                 </CardContent>
@@ -160,10 +169,10 @@ const Word: FC<{
         () => mappedWord.get(normalize(word)),
         [word, mappedWord]
     )
-    if (!translation) return <span>{`${word} `}</span>
+    if (!translation) return <span>{word}</span>
     return (
         <Tooltip title={translation}>
-            <span style={{ backgroundColor: 'wheat' }}>{`${word} `}</span>
+            <span style={{ backgroundColor: 'wheat' }}>{word}</span>
         </Tooltip>
     )
 }
