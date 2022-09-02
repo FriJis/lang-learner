@@ -11,11 +11,12 @@ import {
 import { useLiveQuery } from 'dexie-react-hooks'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { WordEditor } from '../components/WordEditor'
-import { lsConf, mapLangsByKey } from '../conf'
+import { lsConf } from '../conf'
+import { useLangs } from '../hooks/useLangs'
 import { useLS } from '../hooks/useLS'
 import { Word as IWord } from '../types/word'
 import { normalize, say } from '../utils'
-import { getCollection, getWords } from '../utils/db'
+import { getWords } from '../utils/db'
 
 export const ReadPage = () => {
     const [nativeWord, setNativeWord] = useState('')
@@ -30,30 +31,18 @@ export const ReadPage = () => {
         () => text.split(/\n/).map((pr) => pr.split(' ')),
         [text]
     )
-    const collection = useLiveQuery(() => getCollection())
+    const langs = useLangs(reverse)
+
     const words = useLiveQuery(() => getWords())
 
-    const nativeLang = useMemo(() => collection?.nativeLang, [collection])
-    const translationLang = useMemo(
-        () => collection?.translationLang,
-        [collection]
-    )
-    const finalTranslationLang = useMemo(
-        () => (!reverse ? translationLang : nativeLang),
-        [reverse, translationLang, nativeLang]
-    )
-    const finalNativeLang = useMemo(
-        () => (reverse ? translationLang : nativeLang),
-        [reverse, translationLang, nativeLang]
-    )
     const [translator] = useLS(lsConf.translator)
 
     const showTranslation = useCallback(
         (text: string) => {
             if (!text) return
             const link = translator
-                .replaceAll('{{translationLang}}', finalTranslationLang || '')
-                .replaceAll('{{nativeLang}}', finalNativeLang || '')
+                .replaceAll('{{translationLang}}', langs.translation.key || '')
+                .replaceAll('{{nativeLang}}', langs.native.key || '')
                 .replaceAll('{{text}}', text.trim())
             window.open(link, 'translator')
             setShowEditor(true)
@@ -62,7 +51,7 @@ export const ReadPage = () => {
             if (reverse) return setTranslationWord(text)
             setNativeWord(text)
         },
-        [finalNativeLang, finalTranslationLang, translator, reverse]
+        [langs, translator, reverse]
     )
 
     useEffect(() => {
@@ -80,8 +69,8 @@ export const ReadPage = () => {
     const listen = useCallback(() => {
         if (window.speechSynthesis.speaking)
             return window.speechSynthesis.cancel()
-        say(text, finalNativeLang)
-    }, [text, finalNativeLang])
+        say(text, langs.native.key)
+    }, [text, langs])
 
     const pause = useCallback(() => {
         if (window.speechSynthesis.paused)
@@ -97,11 +86,11 @@ export const ReadPage = () => {
             <Card>
                 <CardContent>
                     <Typography>
-                        From {mapLangsByKey.get(finalNativeLang || '')}{' '}
+                        From {langs.native.name}{' '}
                         <IconButton onClick={() => setReverse((o) => !o)}>
                             <i className="fa-solid fa-arrow-right-arrow-left"></i>
                         </IconButton>{' '}
-                        to {mapLangsByKey.get(finalTranslationLang || '')}
+                        to {langs.translation.name}
                     </Typography>
 
                     <TextField

@@ -6,6 +6,7 @@ import {
     TextField,
 } from '@mui/material'
 import { FC, useCallback, useEffect, useState } from 'react'
+import { useLangs } from '../hooks/useLangs'
 import { State } from '../types/app'
 import { Word } from '../types/word'
 import { normalize } from '../utils'
@@ -21,6 +22,7 @@ export const WordEditor: FC<{
     const [native, setNative] = nativeState
     const [translation, setTranslation] = translationState
     const [info, setInfo] = useState(word?.info || '')
+    const langs = useLangs()
 
     useEffect(() => {
         setNative(word?.native || '')
@@ -59,14 +61,14 @@ export const WordEditor: FC<{
             <DialogContent sx={{ '& .MuiTextField-root': { mt: 1 } }}>
                 <TextField
                     fullWidth
-                    label="Native"
+                    label={langs.native.name}
                     variant="standard"
                     value={native}
                     onChange={(e) => setNative(e.target.value)}
                 ></TextField>
                 <TextField
                     fullWidth
-                    label="Translation"
+                    label={langs.translation.name}
                     variant="standard"
                     value={translation}
                     onChange={(e) => setTranslation(e.target.value)}

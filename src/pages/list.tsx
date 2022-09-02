@@ -19,6 +19,7 @@ import _ from 'lodash'
 import { FC, useCallback, useMemo, useRef, useState } from 'react'
 import { Nothing } from '../components/Nothing'
 import { WordEditor } from '../components/WordEditor'
+import { useLangs } from '../hooks/useLangs'
 import { Word } from '../types/word'
 import { regCheck } from '../utils'
 import { db, getCollection, getWords } from '../utils/db'
@@ -35,6 +36,8 @@ export const ListPage = () => {
 
     const nativeRef = useRef<HTMLInputElement>(null)
     const words = useLiveQuery(() => getWords())
+
+    const langs = useLangs()
 
     const collection = useLiveQuery(() => getCollection())
 
@@ -92,14 +95,14 @@ export const ListPage = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Native </TableCell>
+                            <TableCell>{langs.native.name}</TableCell>
                             <TableCell width={50}>
                                 <IconButton onClick={changeSides}>
                                     <i className="fa-solid fa-arrow-right-arrow-left"></i>
                                 </IconButton>
                             </TableCell>
                             <TableCell>
-                                Translation{' '}
+                                {langs.translation.name}{' '}
                                 <IconButton
                                     onClick={() =>
                                         setShowTranslation((o) => !o)
@@ -133,7 +136,7 @@ export const ListPage = () => {
                                     value={native}
                                     ref={nativeRef}
                                     onChange={(e) => setNative(e.target.value)}
-                                    placeholder="Native..."
+                                    placeholder={`Native...`}
                                 ></Input>
                             </TableCell>
                             <TableCell></TableCell>
