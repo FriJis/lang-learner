@@ -108,8 +108,8 @@ export const SettingsPage = () => {
                     const data = {
                         translation: normalize(translation),
                         native: normalize(native),
-                        progress,
-                        info,
+                        progress: +progress,
+                        info: info || '',
                     }
 
                     if (exTranslation)
