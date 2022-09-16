@@ -65,6 +65,7 @@ export const WritePage = () => {
         if (!word) return
         const nextIndex = helper.length + 1
         const nextHint = word.translation.slice(0, nextIndex)
+        inputRef.current?.click()
         if (helper === word.translation) {
             updater.fail()
             sayNative(word.native)
@@ -72,7 +73,6 @@ export const WritePage = () => {
             return setPrev(word)
         }
         setHelper(nextHint)
-        inputRef.current?.click()
     }, [helper, word, inputRef, updater])
 
     const idk = useCallback(() => {
@@ -83,16 +83,18 @@ export const WritePage = () => {
         sayTranslation(word.translation)
         updater.fail()
         generate()
-    }, [word, generate, updater])
+        inputRef.current?.click()
+    }, [word, generate, updater, inputRef])
 
     usePressBtn(
         useCallback(
             (e) => {
-                if (e.key === '+') {
+                if (!e.ctrlKey) return
+                if (e.key === 'h') {
                     e.preventDefault()
                     help()
                 }
-                if (e.key === '-') {
+                if (e.key === 'i') {
                     e.preventDefault()
                     idk()
                 }
@@ -138,8 +140,10 @@ export const WritePage = () => {
                         ></Input>
                     </CardContent>
                     <CardActions>
-                        <Button onClick={help}>Hint with one letter (+)</Button>
-                        <Button onClick={idk}>I don't know (-)</Button>
+                        <Button onClick={help}>
+                            Hint with one letter (ctrl + h)
+                        </Button>
+                        <Button onClick={idk}>I don't know (ctrl + i)</Button>
                         <Button
                             type="submit"
                             variant="contained"
