@@ -21,7 +21,7 @@ import { Nothing } from '../components/Nothing'
 import { WordEditor } from '../components/WordEditor'
 import { useLangs } from '../hooks/useLangs'
 import { Word } from '../types/word'
-import { regCheck } from '../utils'
+import { regCheck, sayNative, sayTranslation } from '../utils'
 import { db, getCollection, getWords } from '../utils/db'
 import { swapWord } from '../utils/db'
 
@@ -195,6 +195,15 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
         swapWord(word)
     }, [word])
 
+    const say = useCallback((text: string, type: 'translation' | 'native') => {
+        if (type === 'translation') return sayTranslation(text)
+        return sayNative(text)
+    }, [])
+
+    const stopSay = useCallback(() => {
+        window.speechSynthesis.cancel()
+    }, [])
+
     return (
         <>
             <WordEditor
@@ -205,7 +214,10 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
                 translationState={translationState}
             ></WordEditor>
             <TableRow key={word.id} onFocus={() => {}}>
-                <TableCell>
+                <TableCell
+                    onMouseEnter={() => say(word.native, 'native')}
+                    onMouseLeave={() => stopSay()}
+                >
                     <Typography>{word.native}</Typography>
                 </TableCell>
                 <TableCell>
@@ -213,13 +225,21 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
                         <i className="fa-solid fa-arrow-right-arrow-left"></i>
                     </IconButton>
                 </TableCell>
-                <TableCell>
-                    {showTranslation ? (
+
+                {showTranslation ? (
+                    <TableCell
+                        onMouseEnter={() =>
+                            say(word.translation, 'translation')
+                        }
+                        onMouseLeave={() => stopSay()}
+                    >
                         <Typography>{word.translation}</Typography>
-                    ) : (
-                        '...'
-                    )}
-                </TableCell>
+                    </TableCell>
+                ) : (
+                    <TableCell>
+                        <Typography>...</Typography>
+                    </TableCell>
+                )}
                 <TableCell>
                     <Slider
                         max={1}
