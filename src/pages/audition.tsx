@@ -17,9 +17,9 @@ import { say } from '../utils'
 
 export const AuditionPage = () => {
     const [reverse, setReverse] = useState(true)
-    const [delimiter, setDelimiter] = useState('. ')
     const [originText, setOriginText] = useState('')
     const [userText, setUserText] = useState('')
+    const [userResults, setUserResults] = useState<string[]>([])
     const [preparedText, setPreparedText] = useState<string[]>([])
     const [currentIndex, setCurrentIndex] = useState(0)
     const [finished, setFinished] = useState(false)
@@ -36,31 +36,43 @@ export const AuditionPage = () => {
 
     const langs = useLangs(reverse)
 
-    const started = useMemo(() => preparedText.length > 0, [preparedText])
+    const [started, setStarted] = useState(false)
 
     const start = useCallback(() => {
         setCurrentIndex(0)
-        setPreparedText(originText.split(delimiter))
+        // eslint-disable-next-line
+        setPreparedText(
+            _.compact(originText.split(/\. |\!|\"|\”|\(|\)|\n|\。/))
+        )
         setFinished(false)
         setUserText('')
-    }, [originText, delimiter])
+        setStarted(true)
+        setUserResults([])
+    }, [originText])
 
     const speak = useCallback(() => {
         window.speechSynthesis.cancel()
         say(currentPreparedText, langs.native.key)
     }, [currentPreparedText, langs])
 
+    const save = useCallback(() => {
+        setUserResults((o) => [...o, userText])
+        setUserText('')
+    }, [userText])
+
     const next = useCallback(() => {
         setCurrentIndex((o) => o + 1)
         window.speechSynthesis.cancel()
         say(nextPreparedText, langs.native.key)
-    }, [nextPreparedText, langs.native.key])
+        save()
+    }, [nextPreparedText, langs.native.key, save])
 
     const finish = useCallback(() => {
         window.speechSynthesis.cancel()
-        setPreparedText([])
         setFinished(true)
-    }, [])
+        setStarted(false)
+        save()
+    }, [save])
 
     return (
         <Card>
@@ -84,15 +96,6 @@ export const AuditionPage = () => {
                 <>
                     <CardContent>
                         <TextField
-                            label="Delimeter"
-                            multiline
-                            fullWidth
-                            value={delimiter}
-                            onChange={(e) => setDelimiter(e.target.value)}
-                        ></TextField>
-                    </CardContent>
-                    <CardContent>
-                        <TextField
                             label="Text"
                             maxRows={5}
                             multiline
@@ -104,9 +107,7 @@ export const AuditionPage = () => {
                     <CardActions>
                         <Button
                             onClick={start}
-                            disabled={
-                                originText.length <= 0 || delimiter === ''
-                            }
+                            disabled={originText.length <= 0}
                         >
                             Start
                         </Button>
@@ -137,10 +138,18 @@ export const AuditionPage = () => {
             {finished && (
                 <>
                     <CardContent>
-                        <Typography>{originText}</Typography>
+                        {preparedText.map((text, i) => (
+                            <Typography key={i}>
+                                {i + 1}){text}
+                            </Typography>
+                        ))}
                     </CardContent>
                     <CardContent>
-                        <Typography>{userText}</Typography>
+                        {userResults.map((text, i) => (
+                            <Typography key={i}>
+                                {i + 1}){text}
+                            </Typography>
+                        ))}
                     </CardContent>
                 </>
             )}
