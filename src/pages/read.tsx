@@ -3,6 +3,8 @@ import {
     Card,
     CardActions,
     CardContent,
+    Checkbox,
+    FormControlLabel,
     IconButton,
     TextField,
     Tooltip,
@@ -26,30 +28,40 @@ export const ReadPage = () => {
     const textRef = useRef<HTMLPreElement>(null)
 
     const [reverse, setReverse] = useState(true)
+    const [spaceStart, setSpaceStart] = useState(true)
+    const [spaceEnd, setSpaceEnd] = useState(false)
 
     const [text, setText] = useState('')
     const words = useLiveQuery(() => getWords())
 
+    const getCurrentWords = useCallback(
+        (w: IWord) => {
+            const native = reverse ? w.translation : w.native
+            const translation = !reverse ? w.translation : w.native
+            return { native, translation }
+        },
+        [reverse]
+    )
+
     const preparedText = useMemo(() => {
-        const res = _.sortBy(words, (w) =>
-            reverse ? w.translation.length : w.native.length
-        )
+        const letterPattern = 'usdybfiuxweryitchjxgwuytxewurftxeruvytu'
+        const makeRegExp = (w: string) => new RegExp(_.escapeRegExp(w), 'gim')
+        const buildWord = (word: string) =>
+            `${spaceStart ? ' ' : ''}${word}${spaceEnd ? ' ' : ''}`
+
+        return _.sortBy(words, (w) => getCurrentWords(w).native.length)
             .reverse()
-            ?.reduce<string>((acc, word) => {
-                const w = reverse ? word.translation : word.native
+            .reduce<string>((acc, word) => {
+                const { native } = getCurrentWords(word)
                 return acc.replace(
-                    new RegExp(_.escapeRegExp(` ${w}`), 'gim'),
-                    ` <<${w}>>`
+                    makeRegExp(buildWord(native)),
+                    buildWord(`<<${native.split('').join(letterPattern)}>>`)
                 )
             }, text)
-        const splitted = res?.split('<<')
+            .replace(makeRegExp(letterPattern), '')
+            .split(/<<|>>/)
+    }, [text, words, getCurrentWords, spaceStart, spaceEnd])
 
-        return (
-            splitted?.reduce<string[]>((acc, exp) => {
-                return [...acc, ...exp.split('>>')]
-            }, []) || []
-        )
-    }, [text, words, reverse])
     const langs = useLangs(reverse)
 
     const [translator] = useLS(lsConf.translator)
@@ -98,6 +110,7 @@ export const ReadPage = () => {
     useEffect(() => {
         return () => window.speechSynthesis.cancel()
     }, [])
+
     return (
         <>
             <Card>
@@ -109,7 +122,26 @@ export const ReadPage = () => {
                         </IconButton>{' '}
                         to {langs.translation.name}
                     </Typography>
-
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={spaceStart}
+                                onChange={(e) =>
+                                    setSpaceStart(e.target.checked)
+                                }
+                            />
+                        }
+                        label="take into account the gap at the beginning"
+                    />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={spaceEnd}
+                                onChange={(e) => setSpaceEnd(e.target.checked)}
+                            />
+                        }
+                        label="take into account the space at the end"
+                    />
                     <TextField
                         maxRows={5}
                         multiline

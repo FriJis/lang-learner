@@ -184,7 +184,10 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
     const nativeState = useState('')
     const translationState = useState('')
 
-    const del = useCallback(() => db.words.delete(word.id || 0), [word.id])
+    const del = useCallback(() => {
+        if (!window.confirm('Delete this word?')) return
+        db.words.delete(word.id || 0)
+    }, [word.id])
 
     const updateProgress = useCallback(
         () => db.words.update(word.id || 0, { progress: newProgress }),

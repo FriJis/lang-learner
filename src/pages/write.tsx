@@ -17,7 +17,6 @@ import { Form } from '../components/Form'
 import { usePressBtn } from '../hooks/usePressBtn'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
-import { useStopWatch } from '../hooks/useStopWatch'
 import { Nothing } from '../components/Nothing'
 import { Info } from '../components/Info'
 
@@ -27,7 +26,6 @@ export const WritePage = () => {
     const [helper, setHelper] = useState('')
     const [showPrev, setShowPrev] = useState(false)
     const [prev, setPrev] = useState<Word | null>(null)
-    const stopWatch = useStopWatch()
 
     const [learnFirst] = useLS(lsConf.learn_first)
 
@@ -122,7 +120,6 @@ export const WritePage = () => {
             <Form onSubmit={compare}>
                 <Card>
                     <CardContent>
-                        <Typography>Stopwatch: {stopWatch}</Typography>
                         <Typography>
                             {word?.native} <Info word={word}></Info>
                         </Typography>
