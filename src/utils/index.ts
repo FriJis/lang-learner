@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { lsConf } from '../conf'
 import { getCollection } from './db'
 
 export function getRandomValueFromArray<T>(arr: T[]): T {
@@ -20,6 +21,8 @@ export function say(text: string, lang?: string) {
     const message = new SpeechSynthesisUtterance()
     message.lang = lang || 'en-EN'
     message.text = text
+    const conf = lsConf.speakRate
+    message.rate = +(localStorage.getItem(conf.name) || conf.def)
     window.speechSynthesis.speak(message)
 }
 

@@ -42,6 +42,7 @@ export const SettingsPage = () => {
     const [controlWorkTimer, setControlWorkTimer] = useLS(
         lsConf.control_work_timer
     )
+    const [speakRate, setSpeakRate] = useLS(lsConf.speakRate)
 
     const collections = useLiveQuery(() => db.collections.toArray())
     const collection = useLiveQuery(() => getCollection())
@@ -252,6 +253,16 @@ export const SettingsPage = () => {
                         value={controlWorkTimer}
                         onChange={(e, v) =>
                             setControlWorkTimer(_.isArray(v) ? v[0] : v)
+                        }
+                    ></Slider>
+                    <Typography>Synthesis speed {speakRate}</Typography>
+                    <Slider
+                        min={0.5}
+                        max={2}
+                        step={0.1}
+                        value={speakRate}
+                        onChange={(e, v) =>
+                            setSpeakRate(_.isArray(v) ? v[0] : v)
                         }
                     ></Slider>
                     <Typography>Link for translation helper</Typography>

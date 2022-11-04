@@ -5,7 +5,6 @@ import {
     CardContent,
     Checkbox,
     FormControlLabel,
-    IconButton,
     TextField,
     Tooltip,
     Typography,
@@ -13,6 +12,7 @@ import {
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ReverseLangs } from '../components/Reverse'
 import { WordEditor } from '../components/WordEditor'
 import { lsConf } from '../conf'
 import { useLangs } from '../hooks/useLangs'
@@ -115,13 +115,7 @@ export const ReadPage = () => {
         <>
             <Card>
                 <CardContent>
-                    <Typography>
-                        From {langs.native.name}{' '}
-                        <IconButton onClick={() => setReverse((o) => !o)}>
-                            <i className="fa-solid fa-arrow-right-arrow-left"></i>
-                        </IconButton>{' '}
-                        to {langs.translation.name}
-                    </Typography>
+                    <ReverseLangs reverse={reverse} setReverse={setReverse} />
                     <FormControlLabel
                         control={
                             <Checkbox

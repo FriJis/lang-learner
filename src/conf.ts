@@ -27,6 +27,10 @@ export const lsConf = {
         name: 'control_work_timer',
         def: 1,
     },
+    speakRate: {
+        name: 'speak_rate',
+        def: 1,
+    },
     translator: {
         name: 'translator',
         def: 'https://translate.google.com/?sl={{nativeLang}}&tl={{translationLang}}&text={{text}}&op=translate',
