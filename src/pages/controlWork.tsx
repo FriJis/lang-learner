@@ -77,7 +77,7 @@ export const ControlWorkPage = () => {
                     if (word.progress < 1) return false
                     if (_.isUndefined(word.lastControllWork)) return true
                     if (
-                        moment().diff(moment(word.lastControllWork), 'hours') <
+                        moment().diff(moment(word.lastControllWork), 'days') <
                         controlWorkTimer
                     )
                         return false

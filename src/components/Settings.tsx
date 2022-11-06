@@ -36,7 +36,6 @@ export const GeneralSettings = () => {
     const [mistakeOffset, setMistakeOffset] = useLS(lsConf.mistake_offset)
     const [learnFirst, setLearnFirst] = useLS(lsConf.learn_first)
     const [translator, setTranslator] = useLS(lsConf.translator)
-
     const [speakRate, setSpeakRate] = useLS(lsConf.speakRate)
 
     return (
@@ -392,11 +391,12 @@ export const ControlWorkSettings = () => {
             <Card>
                 <CardContent>
                     <Typography>
-                        The difference in hours between control works:{' '}
+                        The difference in days between control works:{' '}
                         {controlWorkTimer > 0
                             ? controlWorkTimer
                             : 'Has no timer'}
                     </Typography>
+
                     <Slider
                         min={0}
                         max={72}
