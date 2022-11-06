@@ -1,12 +1,16 @@
 import { Container } from '@mui/material'
 import { PageManager } from './components/PageManager'
+import {
+    CollectionSettings,
+    ControlWorkSettings,
+    GeneralSettings,
+} from './components/Settings'
 import { AuditionPage } from './pages/audition'
 import { ControlWorkPage } from './pages/controlWork'
 import { LearnPage } from './pages/learn'
 import { ListPage } from './pages/list'
 import { ListenPage } from './pages/listen'
 import { ReadPage } from './pages/read'
-import { SettingsPage } from './pages/settings'
 import { WritePage } from './pages/write'
 
 enum Pages {
@@ -96,7 +100,27 @@ function App() {
                     {
                         label: 'Settings',
                         value: Pages.settings,
-                        component: <SettingsPage></SettingsPage>,
+                        component: (
+                            <PageManager
+                                pages={[
+                                    {
+                                        label: 'General',
+                                        value: 'general',
+                                        component: <GeneralSettings />,
+                                    },
+                                    {
+                                        label: 'Collections',
+                                        value: 'collections',
+                                        component: <CollectionSettings />,
+                                    },
+                                    {
+                                        label: 'Control test',
+                                        value: 'controlTest',
+                                        component: <ControlWorkSettings />,
+                                    },
+                                ]}
+                            />
+                        ),
                     },
                 ]}
             ></PageManager>

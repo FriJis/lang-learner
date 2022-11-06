@@ -1,6 +1,5 @@
 import {
     Button,
-    Card,
     CardActions,
     CardContent,
     Grid,
@@ -9,6 +8,7 @@ import {
 import _ from 'lodash'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
+import { Card } from '../components/hoc/Card'
 import { Info } from '../components/Info'
 import { Nothing } from '../components/Nothing'
 import { lsConf } from '../conf'

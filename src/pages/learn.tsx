@@ -1,6 +1,5 @@
 import {
     Button,
-    Card,
     CardActions,
     CardContent,
     Dialog,
@@ -10,6 +9,7 @@ import {
 } from '@mui/material'
 import _ from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
+import { Card } from '../components/hoc/Card'
 import { Info } from '../components/Info'
 import { Nothing } from '../components/Nothing'
 import { lsConf } from '../conf'

@@ -1,6 +1,5 @@
 import {
     Button,
-    Card,
     CardActions,
     CardContent,
     Checkbox,
@@ -12,6 +11,7 @@ import {
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Card } from '../components/hoc/Card'
 import { ReverseLangs } from '../components/Reverse'
 import { WordEditor } from '../components/WordEditor'
 import { lsConf } from '../conf'

@@ -1,6 +1,5 @@
 import {
     Button,
-    Card,
     CardActions,
     CardContent,
     Input,
@@ -19,6 +18,7 @@ import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { Nothing } from '../components/Nothing'
 import { Info } from '../components/Info'
+import { Card } from '../components/hoc/Card'
 
 export const WritePage = () => {
     const [word, setWord] = useState<Word | null>(null)

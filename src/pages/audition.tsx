@@ -1,6 +1,5 @@
 import {
     Button,
-    Card,
     CardActions,
     CardContent,
     Slider,
@@ -9,6 +8,7 @@ import {
 } from '@mui/material'
 import _ from 'lodash'
 import { useCallback, useMemo, useState } from 'react'
+import { Card } from '../components/hoc/Card'
 import { ReverseLangs } from '../components/Reverse'
 import { lsConf } from '../conf'
 import { useLangs } from '../hooks/useLangs'
@@ -40,8 +40,8 @@ export const AuditionPage = () => {
 
     const start = useCallback(() => {
         setCurrentIndex(0)
-        // eslint-disable-next-line
         setPreparedText(
+            // eslint-disable-next-line
             _.compact(originText.split(/\. |\!|\"|\”|\(|\)|\n|\。/))
         )
         setFinished(false)
