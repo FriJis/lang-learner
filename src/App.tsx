@@ -1,16 +1,19 @@
 import { Container } from '@mui/material'
+import { useCallback } from 'react'
 import { PageManager } from './components/PageManager'
 import {
     CollectionSettings,
     ControlWorkSettings,
     GeneralSettings,
 } from './components/Settings'
+import { useRecognation } from './hooks/useRecognation'
 import { AuditionPage } from './pages/audition'
 import { ControlWorkPage } from './pages/controlWork'
 import { LearnPage } from './pages/learn'
 import { ListPage } from './pages/list'
 import { ListenPage } from './pages/listen'
 import { ReadPage } from './pages/read'
+import { WordAuditionPage } from './pages/wordAudition'
 import { WritePage } from './pages/write'
 
 enum Pages {
@@ -63,6 +66,11 @@ function App() {
                                         label: 'Listening',
                                         value: LearnPages.listening,
                                         component: <ListenPage></ListenPage>,
+                                    },
+                                    {
+                                        label: 'Audition',
+                                        value: 'audition',
+                                        component: <WordAuditionPage />,
                                     },
                                     {
                                         label: 'Final test',
