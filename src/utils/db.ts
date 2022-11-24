@@ -2,11 +2,13 @@ import Dexie, { Table } from 'dexie'
 import _ from 'lodash'
 import { normalize } from '.'
 import { Collection } from '../types/collection'
+import { Statistics } from '../types/statistics'
 import { Word } from '../types/word'
 
 export class MySubClassedDexie extends Dexie {
     words!: Table<Word>
     collections!: Table<Collection>
+    statistics!: Table<Statistics>
     // texts!: Table<Texts>
 
     constructor() {
@@ -39,9 +41,9 @@ export class MySubClassedDexie extends Dexie {
         this.version(5).stores({
             words: '++id, collectionId, native, translation, progress, info, lastControllWork',
         })
-        // this.version(6).stores({
-        //     texts: '++id, text',
-        // })
+        this.version(6).stores({
+            statistics: '++id, metaValue, collectionId, type, createdAt',
+        })
     }
 }
 
@@ -59,6 +61,15 @@ export async function swapWord(word: Word) {
 
 export const getCollection = () =>
     db.collections.toArray().then((cls) => cls.find((cl) => cl.active))
+
+export const getStatistics = async () => {
+    const collection = await getCollection()
+    if (!collection) return []
+    return db.statistics
+        .where('collectionId')
+        .equals(collection.id || 0)
+        .toArray()
+}
 
 export async function getWords() {
     const collection = await getCollection()

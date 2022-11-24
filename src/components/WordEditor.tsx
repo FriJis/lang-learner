@@ -5,9 +5,11 @@ import {
     DialogContent,
     TextField,
 } from '@mui/material'
+import moment from 'moment'
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useLangs } from '../hooks/useLangs'
 import { State } from '../types/app'
+import { StatisticsType } from '../types/statistics'
 import { Word } from '../types/word'
 import { normalize } from '../utils'
 import { db, getCollection } from '../utils/db'
@@ -32,7 +34,8 @@ export const WordEditor: FC<{
 
     const save = useCallback(async () => {
         const collection = await getCollection()
-        if (!collection?.id) return
+        const collectionId = collection?.id
+        if (!collectionId) return
         const data = {
             native: normalize(native),
             translation: normalize(translation),
@@ -40,10 +43,18 @@ export const WordEditor: FC<{
         }
 
         if (!word) {
-            await db.words.add({
-                ...data,
-                progress: 0,
-                collectionId: collection.id,
+            await db.transaction('rw', db.words, db.statistics, async () => {
+                await db.statistics.add({
+                    createdAt: moment.utc().toISOString(),
+                    metaValue: `${data.native} - ${data.translation}`,
+                    type: StatisticsType.addedWord,
+                    collectionId,
+                })
+                await db.words.add({
+                    ...data,
+                    progress: 0,
+                    collectionId,
+                })
             })
         } else {
             await db.words.update(word, data)

@@ -8,6 +8,7 @@ import {
 import { AuditionPage } from './pages/audition'
 import { ControlWorkPage } from './pages/controlWork'
 import { LearnPage } from './pages/learn'
+import { LearnedWordStatsPage } from './pages/learnedWordsStats'
 import { ListPage } from './pages/list'
 import { ListenPage } from './pages/listen'
 import { ReadPage } from './pages/read'
@@ -117,6 +118,21 @@ function App() {
                                         label: 'Control test',
                                         value: 'controlTest',
                                         component: <ControlWorkSettings />,
+                                    },
+                                ]}
+                            />
+                        ),
+                    },
+                    {
+                        label: 'Statistics',
+                        value: 'statistics',
+                        component: (
+                            <PageManager
+                                pages={[
+                                    {
+                                        label: 'Learned words',
+                                        value: 'LearnedWords',
+                                        component: <LearnedWordStatsPage />,
                                     },
                                 ]}
                             />
