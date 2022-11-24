@@ -27,7 +27,7 @@ import {
     normalize,
     readTextFromFile,
 } from '../utils'
-import { db, getCollection, getWords } from '../utils/db'
+import { db, getCollection, getStatistics, getWords } from '../utils/db'
 import { Half } from './Half'
 import { Card } from './hoc/Card'
 
@@ -264,6 +264,24 @@ export const CollectionSettings = () => {
         setLoading(false)
     }, [])
 
+    const deleteStatistics = useCallback(async () => {
+        const confirmation = window.confirm('are you sure?')
+        if (!confirmation) return
+        setLoading(true)
+        try {
+            const statistics = await getStatistics()
+            await Promise.all(
+                statistics.map(
+                    (stat) =>
+                        !_.isUndefined(stat.id) && db.statistics.delete(stat.id)
+                )
+            )
+        } catch (error) {
+            console.error(error)
+        }
+        setLoading(false)
+    }, [])
+
     const resetProgress = useCallback(async () => {
         const confirmation = window.confirm('are you sure?')
         if (!confirmation) return
@@ -374,6 +392,9 @@ export const CollectionSettings = () => {
                     </Button>
                     <Button color="error" onClick={deleteWords}>
                         Remove all words from this collection
+                    </Button>
+                    <Button color="error" onClick={deleteStatistics}>
+                        Delete all statistics of this collection
                     </Button>
                 </CardActions>
             </Card>
