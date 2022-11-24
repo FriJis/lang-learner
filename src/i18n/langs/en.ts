@@ -7,6 +7,6 @@ export const i18nEn = {
         [StatisticsType.addedWord]: 'Added new words',
         [StatisticsType.auditedText]: 'Audited texts',
         [StatisticsType.learnedWord]: 'Learned words',
-        [StatisticsType.passedFinalTest]: 'Passed final test words',
+        [StatisticsType.passedFinalTest]: 'Passed words in final test',
     },
 }

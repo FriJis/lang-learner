@@ -7,13 +7,16 @@ import {
     Typography,
 } from '@mui/material'
 import _ from 'lodash'
+import moment from 'moment'
 import { useCallback, useMemo, useState } from 'react'
 import { Card } from '../components/hoc/Card'
 import { ReverseLangs } from '../components/Reverse'
 import { lsConf } from '../conf'
 import { useLangs } from '../hooks/useLangs'
 import { useLS } from '../hooks/useLS'
+import { StatisticsType } from '../types/statistics'
 import { say } from '../utils'
+import { db, getCollection } from '../utils/db'
 
 export const AuditionPage = () => {
     const [reverse, setReverse] = useState(true)
@@ -67,12 +70,22 @@ export const AuditionPage = () => {
         save()
     }, [nextPreparedText, langs.native.key, save])
 
-    const finish = useCallback(() => {
+    const finish = useCallback(async () => {
         window.speechSynthesis.cancel()
         setFinished(true)
         setStarted(false)
         save()
-    }, [save])
+        const collection = await getCollection()
+        const collectionId = collection?.id
+        if (collectionId) {
+            await db.statistics.add({
+                metaValue: originText,
+                collectionId,
+                type: StatisticsType.auditedText,
+                createdAt: moment.utc().toISOString(),
+            })
+        }
+    }, [save, originText])
 
     return (
         <Card>
