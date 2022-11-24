@@ -75,6 +75,9 @@ export const Chart: FC<{
                 scales: {
                     y: {
                         beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                        },
                     },
                 },
             },

@@ -126,17 +126,7 @@ function App() {
                     {
                         label: 'Statistics',
                         value: 'statistics',
-                        component: (
-                            <PageManager
-                                pages={[
-                                    {
-                                        label: 'Learned words',
-                                        value: 'LearnedWords',
-                                        component: <LearnedWordStatsPage />,
-                                    },
-                                ]}
-                            />
-                        ),
+                        component: <LearnedWordStatsPage />,
                     },
                 ]}
             ></PageManager>

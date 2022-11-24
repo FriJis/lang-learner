@@ -13,9 +13,10 @@ import { Info } from '../components/Info'
 import { Nothing } from '../components/Nothing'
 import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
+import { StatisticsType } from '../types/statistics'
 import { Word } from '../types/word'
 import { getRandomValueFromArray, sayNative, sayTranslation } from '../utils'
-import { db, getWords } from '../utils/db'
+import { db, getCollection, getWords } from '../utils/db'
 
 export const ControlWorkPage = () => {
     const [checkedWords, setCheckedWords] = useState<number[]>([])
@@ -51,14 +52,33 @@ export const ControlWorkPage = () => {
             const id = word?.id
             if (!id) return
 
-            if (word.translation !== translation) {
-                await db.words.update(word, { progress: 0 })
-            }
-            await db.words.update(word, {
-                lastControllWork: moment().toISOString(),
-            })
+            await db.transaction(
+                'rw',
+                db.words,
+                db.collections,
+                db.statistics,
+                async () => {
+                    if (word.translation !== translation) {
+                        await db.words.update(word, { progress: 0 })
+                    } else {
+                        const collection = await getCollection()
+                        const collectionId = collection?.id
+                        if (!collectionId)
+                            throw new Error('collection is undefined')
 
-            setCheckedWords((o) => [...o, id])
+                        await db.statistics.add({
+                            type: StatisticsType.passedFinalTest,
+                            metaValue: `${word.native} - ${word.translation}`,
+                            createdAt: moment.utc().toISOString(),
+                            collectionId,
+                        })
+                    }
+                    await db.words.update(word, {
+                        lastControllWork: moment().toISOString(),
+                    })
+                    setCheckedWords((o) => [...o, id])
+                }
+            )
 
             setShowTranslations(false)
         },

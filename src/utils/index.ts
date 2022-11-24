@@ -1,4 +1,5 @@
 import { ChartData } from 'chart.js'
+import { t } from 'i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import { lsConf } from '../conf'
@@ -93,7 +94,7 @@ export function convertStatisticsDataToChart(
         new Set(filteredStats.map((stat) => stat.type)).values()
     )
 
-    const dates = Array(30)
+    const dates = Array(days)
         .fill('')
         .map((_, i) => format(moment().utc().subtract(i, 'days')))
         .reverse()
@@ -111,8 +112,10 @@ export function convertStatisticsDataToChart(
     }, new Map(types.map((t) => [t, new Map(dates.map((date) => [date, []]))])))
 
     return {
-        datasets: Array.from(mappedTypes.entries()).map(([t, dates]) => ({
-            label: t,
+        datasets: Array.from(mappedTypes.entries()).map(([label, dates]) => ({
+            label: t(`stats.${label}`).toString(),
+            borderColor: t(`color.${label}`).toString(),
+            backgroundColor: t(`color.${label}`).toString(),
             data: Array.from(dates).map(([date, stats]) => ({
                 x: date,
                 y: stats.length,

@@ -35,6 +35,10 @@ export const lsConf = {
         name: 'translator',
         def: 'https://translate.google.com/?sl={{nativeLang}}&tl={{translationLang}}&text={{text}}&op=translate',
     },
+    statsDays: {
+        name: 'stats_days',
+        def: 30,
+    },
 }
 
 export const langs = [
