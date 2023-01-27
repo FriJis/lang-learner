@@ -16,7 +16,7 @@ import {
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { ChangeEvent, FC, useCallback, useMemo, useState } from 'react'
-import { lsConf, mappedLangs } from '../conf'
+import { lsConf, voices } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { Collection } from '../types/collection'
 import { ExportedWord } from '../types/word'
@@ -311,7 +311,6 @@ export const CollectionSettings = () => {
                         left={
                             <>
                                 <Typography>Native language</Typography>
-
                                 <Select
                                     value={nativeLang}
                                     onChange={(e) =>
@@ -319,9 +318,12 @@ export const CollectionSettings = () => {
                                     }
                                     fullWidth
                                 >
-                                    {mappedLangs.map((l, i) => (
-                                        <MenuItem value={l.value} key={i}>
-                                            {l.label}
+                                    {voices.map((voice, i) => (
+                                        <MenuItem
+                                            value={voice.voiceURI}
+                                            key={i}
+                                        >
+                                            {voice.name} ({voice.lang})
                                         </MenuItem>
                                     ))}
                                 </Select>
@@ -340,9 +342,12 @@ export const CollectionSettings = () => {
                                     }
                                     fullWidth
                                 >
-                                    {mappedLangs.map((l, i) => (
-                                        <MenuItem value={l.value} key={i}>
-                                            {l.label}
+                                    {voices.map((voice, i) => (
+                                        <MenuItem
+                                            value={voice.voiceURI}
+                                            key={i}
+                                        >
+                                            {voice.name} ({voice.lang})
                                         </MenuItem>
                                     ))}
                                 </Select>
