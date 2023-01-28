@@ -16,7 +16,7 @@ import {
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { ChangeEvent, FC, useCallback, useMemo, useState } from 'react'
-import { lsConf, voices } from '../conf'
+import { lsConf } from '../conf'
 import { useLS } from '../hooks/useLS'
 import { Collection } from '../types/collection'
 import { ExportedWord } from '../types/word'
@@ -153,6 +153,7 @@ export const CollectionSettings = () => {
         () => collection?.translationLang || '',
         [collection]
     )
+    const voices = useMemo(() => window.speechSynthesis.getVoices(), [])
 
     const setLang = useCallback(
         (type: 'nativeLang' | 'translationLang', lang: string) => {

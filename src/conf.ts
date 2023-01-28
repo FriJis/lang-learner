@@ -41,8 +41,6 @@ export const lsConf = {
     },
 }
 
-export const voices = window.speechSynthesis.getVoices()
-
 export const langs = [
     ['Abkhazian', 'ab'],
     ['Afar', 'aa'],

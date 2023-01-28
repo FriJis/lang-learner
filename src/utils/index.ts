@@ -2,7 +2,7 @@ import { ChartData } from 'chart.js'
 import { t } from 'i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
-import { lsConf, voices } from '../conf'
+import { lsConf } from '../conf'
 import { Statistics, StatisticsType } from '../types/statistics'
 import { getCollection } from './db'
 
@@ -23,7 +23,9 @@ export async function asyncMap<T, S>(
 
 export function say(text: string, voiceURI?: string) {
     const message = new SpeechSynthesisUtterance()
-    const voice = voices.find((voice) => voice.voiceURI === voiceURI)
+    const voice = window.speechSynthesis
+        .getVoices()
+        .find((voice) => voice.voiceURI === voiceURI)
     if (!voice) return
 
     message.voice = voice
