@@ -21,7 +21,7 @@ import { Nothing } from '../components/Nothing'
 import { WordEditor } from '../components/WordEditor'
 import { useLangs } from '../hooks/useLangs'
 import { Word } from '../types/word'
-import { regCheck, sayNative, sayTranslation } from '../utils'
+import { findWords, sayNative, sayTranslation } from '../utils'
 import { db, getCollection, getWords } from '../utils/db'
 import { swapWord } from '../utils/db'
 
@@ -42,12 +42,7 @@ export const ListPage = () => {
     const collection = useLiveQuery(() => getCollection())
 
     const filteredWords = useMemo(
-        () =>
-            words?.filter(
-                (w) =>
-                    regCheck(w.native, native) &&
-                    regCheck(w.translation, translation)
-            ),
+        () => findWords(words || [], native, translation),
         [native, words, translation]
     )
 

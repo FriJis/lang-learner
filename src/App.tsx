@@ -1,10 +1,8 @@
 import { Container } from '@mui/material'
 import { PageManager } from './components/PageManager'
-import {
-    CollectionSettings,
-    ControlWorkSettings,
-    GeneralSettings,
-} from './components/Settings'
+import { CollectionSettings } from './components/settings/collection'
+import { ControlWorkSettings } from './components/settings/controlWork'
+import { GeneralSettings } from './components/settings/general'
 import { AuditionPage } from './pages/audition'
 import { ControlWorkPage } from './pages/controlWork'
 import { LearnPage } from './pages/learn'
@@ -14,26 +12,6 @@ import { ListenPage } from './pages/listen'
 import { ReadPage } from './pages/read'
 import { WritePage } from './pages/write'
 
-enum Pages {
-    list = 'list',
-    learn = 'learn',
-    settings = 'settings',
-    faq = 'faq',
-    text = 'text',
-}
-
-enum LearnPages {
-    quiz = 'quiz',
-    write = 'write',
-    listening = 'listening',
-    controlWork = 'controlWork',
-}
-
-enum TextPages {
-    read = 'read',
-    audition = 'audition',
-}
-
 function App() {
     return (
         <Container>
@@ -41,33 +19,33 @@ function App() {
                 pages={[
                     {
                         label: 'List',
-                        value: Pages.list,
+                        value: 'list',
                         component: <ListPage></ListPage>,
                     },
                     {
                         label: 'Learn',
-                        value: Pages.learn,
+                        value: 'learn',
                         component: (
                             <PageManager
                                 pages={[
                                     {
                                         label: 'Quiz',
-                                        value: LearnPages.quiz,
+                                        value: 'quiz',
                                         component: <LearnPage></LearnPage>,
                                     },
                                     {
                                         label: 'Write',
-                                        value: LearnPages.write,
+                                        value: 'write',
                                         component: <WritePage></WritePage>,
                                     },
                                     {
                                         label: 'Listening',
-                                        value: LearnPages.listening,
+                                        value: 'listening',
                                         component: <ListenPage></ListenPage>,
                                     },
                                     {
                                         label: 'Final test',
-                                        value: LearnPages.controlWork,
+                                        value: 'controlWork',
                                         component: (
                                             <ControlWorkPage></ControlWorkPage>
                                         ),
@@ -78,18 +56,18 @@ function App() {
                     },
                     {
                         label: 'Text',
-                        value: Pages.text,
+                        value: 'text',
                         component: (
                             <PageManager
                                 pages={[
                                     {
                                         label: 'Read',
-                                        value: TextPages.read,
+                                        value: 'read',
                                         component: <ReadPage></ReadPage>,
                                     },
                                     {
                                         label: 'Audition',
-                                        value: TextPages.audition,
+                                        value: 'audition',
                                         component: (
                                             <AuditionPage></AuditionPage>
                                         ),
@@ -100,7 +78,7 @@ function App() {
                     },
                     {
                         label: 'Settings',
-                        value: Pages.settings,
+                        value: 'settings',
                         component: (
                             <PageManager
                                 pages={[

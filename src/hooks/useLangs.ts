@@ -1,6 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useMemo } from 'react'
-import { mapLangsByKey } from '../conf'
 import { getCollection } from '../utils/db'
 
 export function useLangs(reverse?: boolean) {
@@ -22,13 +21,23 @@ export function useLangs(reverse?: boolean) {
         [reverse, translationKey, nativeKey]
     )
 
+    const voices = useMemo(
+        () =>
+            new Map(
+                window.speechSynthesis
+                    .getVoices()
+                    .map((voice) => [voice.voiceURI, voice])
+            ),
+        []
+    )
+
     const finalNativeName = useMemo(
-        () => mapLangsByKey.get(finalNativeKey || '') || 'Native',
-        [finalNativeKey]
+        () => voices.get(finalNativeKey || '')?.name || 'Native',
+        [finalNativeKey, voices]
     )
     const finalTranslationName = useMemo(
-        () => mapLangsByKey.get(finalTranslationKey || '') || 'Translation',
-        [finalTranslationKey]
+        () => voices.get(finalTranslationKey || '')?.name || 'Translation',
+        [finalTranslationKey, voices]
     )
 
     return {

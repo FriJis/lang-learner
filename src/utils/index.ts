@@ -4,6 +4,7 @@ import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import { lsConf } from '../conf'
 import { Statistics, StatisticsType } from '../types/statistics'
+import { Word } from '../types/word'
 import { getCollection } from './db'
 
 export function getRandomValueFromArray<T>(arr: T[]): T {
@@ -19,6 +20,23 @@ export async function asyncMap<T, S>(
         results.push(await fn(value))
     }
     return results
+}
+
+export function getLangByVoiceURI(voiceURI: string) {
+    const fullLang = window.speechSynthesis
+        .getVoices()
+        .find((voice) => voice.voiceURI === voiceURI)?.lang
+    if (!fullLang) return
+    const short = fullLang.split('-')[0]
+    if (!short) return
+    return short
+}
+
+export function findWords(words: Word[], native: string, translation: string) {
+    return words.filter(
+        (w) =>
+            regCheck(w.native, native) && regCheck(w.translation, translation)
+    )
 }
 
 export function say(text: string, voiceURI?: string) {
@@ -80,7 +98,7 @@ export function jsonParse<T>(val: string): T | null {
 }
 
 export const regCheck = (text: string, toCheck: string) =>
-    !!text.match(new RegExp(toCheck.replace(badRegEx, ''), 'gim'))
+    !!text.match(new RegExp(_.escapeRegExp(toCheck), 'gim'))
 
 export function convertStatisticsDataToChart(
     statistics: Statistics[],

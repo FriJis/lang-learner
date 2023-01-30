@@ -4,15 +4,17 @@ import {
     DialogActions,
     DialogContent,
     TextField,
+    Typography,
 } from '@mui/material'
+import { useLiveQuery } from 'dexie-react-hooks'
 import moment from 'moment'
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useLangs } from '../hooks/useLangs'
 import { State } from '../types/app'
 import { StatisticsType } from '../types/statistics'
 import { Word } from '../types/word'
-import { normalize } from '../utils'
-import { db, getCollection } from '../utils/db'
+import { findWords, normalize } from '../utils'
+import { db, getCollection, getWords } from '../utils/db'
 
 export const WordEditor: FC<{
     word?: Word
@@ -25,12 +27,18 @@ export const WordEditor: FC<{
     const [translation, setTranslation] = translationState
     const [info, setInfo] = useState(word?.info || '')
     const langs = useLangs()
+    const words = useLiveQuery(() => getWords())
 
     useEffect(() => {
         setNative(word?.native || '')
         setTranslation(word?.translation || '')
         setInfo(word?.info || '')
     }, [word, setNative, setTranslation])
+
+    const count = useMemo(
+        () => findWords(words || [], native, translation).length,
+        [words, native, translation]
+    )
 
     const save = useCallback(async () => {
         const collection = await getCollection()
@@ -91,6 +99,9 @@ export const WordEditor: FC<{
                     value={info}
                     onChange={(e) => setInfo(e.target.value)}
                 ></TextField>
+                <Typography marginTop={'10px'}>
+                    Already exists: {count}
+                </Typography>
             </DialogContent>
 
             <DialogActions>

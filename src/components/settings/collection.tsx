@@ -9,138 +9,24 @@ import {
     Grid,
     MenuItem,
     Select,
-    Slider,
     TextField,
     Typography,
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { ChangeEvent, FC, useCallback, useMemo, useState } from 'react'
-import { lsConf } from '../conf'
-import { useLS } from '../hooks/useLS'
-import { Collection } from '../types/collection'
-import { ExportedWord } from '../types/word'
+import { Collection } from '../../types/collection'
+import { ExportedWord } from '../../types/word'
 import {
     asyncMap,
     download,
     jsonParse,
     normalize,
     readTextFromFile,
-} from '../utils'
-import { db, getCollection, getStatistics, getWords } from '../utils/db'
-import { Half } from './Half'
-import { Card } from './hoc/Card'
-
-export const GeneralSettings = () => {
-    const [successOffset, setSuccessOffset] = useLS(lsConf.success_offset)
-    const [mistakeOffset, setMistakeOffset] = useLS(lsConf.mistake_offset)
-    const [learnFirst, setLearnFirst] = useLS(lsConf.learn_first)
-    const [translator, setTranslator] = useLS(lsConf.translator)
-    const [speakRate, setSpeakRate] = useLS(lsConf.speakRate)
-
-    return (
-        <>
-            <Card>
-                <CardContent>
-                    <Typography variant="h5">
-                        Success offset: {successOffset}
-                    </Typography>
-                    <Typography>
-                        Feature progress = current progress (0.5) +{' '}
-                        {successOffset} ={' '}
-                        {0.5 + successOffset > 1
-                            ? 1
-                            : _.round(0.5 + successOffset, 2)}
-                    </Typography>
-                    <Slider
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={successOffset}
-                        onChange={(e, v) =>
-                            setSuccessOffset(_.isArray(v) ? v[0] : v)
-                        }
-                    ></Slider>
-
-                    <Typography variant="h5">
-                        Mistake offset: {mistakeOffset}
-                    </Typography>
-                    <Typography>
-                        Feature progress = current progress (0.5) *{' '}
-                        {mistakeOffset} = {_.round(0.5 * mistakeOffset, 2)}
-                    </Typography>
-
-                    <Slider
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={mistakeOffset}
-                        onChange={(e, v) =>
-                            setMistakeOffset(_.isArray(v) ? v[0] : v)
-                        }
-                    ></Slider>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardContent>
-                    <Typography>
-                        {learnFirst > 0
-                            ? `Learn first of ${learnFirst} words`
-                            : 'Has no limit'}
-                    </Typography>
-                    <Slider
-                        min={0}
-                        max={50}
-                        value={learnFirst}
-                        onChange={(e, v) =>
-                            setLearnFirst(_.isArray(v) ? v[0] : v)
-                        }
-                    ></Slider>
-
-                    <Typography>Synthesis speed {speakRate}</Typography>
-                    <Slider
-                        min={0.5}
-                        max={2}
-                        step={0.1}
-                        value={speakRate}
-                        onChange={(e, v) =>
-                            setSpeakRate(_.isArray(v) ? v[0] : v)
-                        }
-                    ></Slider>
-                    <Typography>Link for translation helper</Typography>
-                    <Typography>
-                        {'{{nativeLang}}, {{translationLang}}, {{text}}'}
-                    </Typography>
-                    <TextField
-                        variant="outlined"
-                        fullWidth
-                        value={translator}
-                        onChange={(e) => setTranslator(e.target.value)}
-                        placeholder="Name..."
-                    ></TextField>
-                </CardContent>
-            </Card>
-        </>
-    )
-}
-
-export const QuizSettings = () => {
-    const [countWords, setCountWords] = useLS(lsConf.count_words)
-
-    return (
-        <Card>
-            <CardContent>
-                <Typography>Count words: {countWords}</Typography>
-                <Slider
-                    min={2}
-                    max={30}
-                    value={countWords}
-                    onChange={(e, v) => setCountWords(_.isArray(v) ? v[0] : v)}
-                ></Slider>
-            </CardContent>
-        </Card>
-    )
-}
+} from '../../utils'
+import { db, getCollection, getStatistics, getWords } from '../../utils/db'
+import { Half } from '../Half'
+import { Card } from '../hoc/Card'
 
 export const CollectionSettings = () => {
     const [err, setErr] = useState(false)
@@ -403,37 +289,6 @@ export const CollectionSettings = () => {
                         Delete all statistics of this collection
                     </Button>
                 </CardActions>
-            </Card>
-        </>
-    )
-}
-
-export const ControlWorkSettings = () => {
-    const [controlWorkTimer, setControlWorkTimer] = useLS(
-        lsConf.control_work_timer
-    )
-
-    return (
-        <>
-            <Card>
-                <CardContent>
-                    <Typography>
-                        The difference in days between control works:{' '}
-                        {controlWorkTimer > 0
-                            ? controlWorkTimer
-                            : 'Has no timer'}
-                    </Typography>
-
-                    <Slider
-                        min={0}
-                        max={72}
-                        step={1}
-                        value={controlWorkTimer}
-                        onChange={(e, v) =>
-                            setControlWorkTimer(_.isArray(v) ? v[0] : v)
-                        }
-                    ></Slider>
-                </CardContent>
             </Card>
         </>
     )

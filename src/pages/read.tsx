@@ -18,7 +18,7 @@ import { lsConf } from '../conf'
 import { useLangs } from '../hooks/useLangs'
 import { useLS } from '../hooks/useLS'
 import { Word as IWord } from '../types/word'
-import { normalize, say } from '../utils'
+import { getLangByVoiceURI, normalize, say } from '../utils'
 import { getWords } from '../utils/db'
 
 export const ReadPage = () => {
@@ -69,9 +69,16 @@ export const ReadPage = () => {
     const showTranslation = useCallback(
         (text: string) => {
             if (!text) return
+
             const link = translator
-                .replaceAll('{{translationLang}}', langs.translation.key || '')
-                .replaceAll('{{nativeLang}}', langs.native.key || '')
+                .replaceAll(
+                    '{{translationLang}}',
+                    getLangByVoiceURI(langs.translation.key || '') || ''
+                )
+                .replaceAll(
+                    '{{nativeLang}}',
+                    getLangByVoiceURI(langs.native.key || '') || ''
+                )
                 .replaceAll('{{text}}', text.trim())
             window.open(link, 'translator')
             setShowEditor(true)
