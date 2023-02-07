@@ -7,6 +7,7 @@ import {
     Typography,
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
+import _ from 'lodash'
 import moment from 'moment'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useLangs } from '../hooks/useLangs'
@@ -36,7 +37,10 @@ export const WordEditor: FC<{
     }, [word, setNative, setTranslation])
 
     const count = useMemo(
-        () => findWords(words || [], native, translation).length,
+        () =>
+            !_.isUndefined(word)
+                ? 0
+                : findWords(words || [], native, translation).length,
         [words, native, translation]
     )
 
@@ -99,9 +103,11 @@ export const WordEditor: FC<{
                     value={info}
                     onChange={(e) => setInfo(e.target.value)}
                 ></TextField>
-                <Typography marginTop={'10px'}>
-                    Already exists: {count}
-                </Typography>
+                {!word && (
+                    <Typography marginTop={'10px'}>
+                        Already exists: {count}
+                    </Typography>
+                )}
             </DialogContent>
 
             <DialogActions>
