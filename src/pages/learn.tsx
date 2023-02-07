@@ -44,7 +44,7 @@ export const LearnPage = () => {
         const preparedWords = _.slice(
             _.shuffle(variants.filter((v) => v.id !== randomWord.id)),
             0,
-            countWords
+            countWords - 1
         )
 
         setWord(randomWord)

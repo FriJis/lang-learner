@@ -7,6 +7,7 @@ import { Card } from '../hoc/Card'
 export const GeneralSettings = () => {
     const [successOffset, setSuccessOffset] = useLS(lsConf.success_offset)
     const [mistakeOffset, setMistakeOffset] = useLS(lsConf.mistake_offset)
+    const [countWords, setCountWords] = useLS(lsConf.count_words)
     const [learnFirst, setLearnFirst] = useLS(lsConf.learn_first)
     const [translator, setTranslator] = useLS(lsConf.translator)
     const [speakRate, setSpeakRate] = useLS(lsConf.speakRate)
@@ -56,6 +57,18 @@ export const GeneralSettings = () => {
             </Card>
             <Card>
                 <CardContent>
+                    <Typography>
+                        {`variants words count in quiz: ${countWords}`}
+                    </Typography>
+
+                    <Slider
+                        min={2}
+                        max={30}
+                        value={countWords}
+                        onChange={(e, v) =>
+                            setCountWords(_.isArray(v) ? v[0] : v)
+                        }
+                    ></Slider>
                     <Typography>
                         {learnFirst > 0
                             ? `Learn first of ${learnFirst} words`
