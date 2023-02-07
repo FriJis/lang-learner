@@ -2,8 +2,6 @@ import {
     Button,
     CardActions,
     CardContent,
-    Checkbox,
-    FormControlLabel,
     TextField,
     Tooltip,
     Typography,
@@ -28,8 +26,6 @@ export const ReadPage = () => {
     const textRef = useRef<HTMLPreElement>(null)
 
     const [reverse, setReverse] = useState(true)
-    const [spaceStart, setSpaceStart] = useState(true)
-    const [spaceEnd, setSpaceEnd] = useState(false)
 
     const [text, setText] = useState('')
     const words = useLiveQuery(() => getWords())
@@ -60,56 +56,18 @@ export const ReadPage = () => {
                     if (_.isUndefined(index)) return finished
 
                     const lastIndex = index + native.length
-                    const prevLetter = finished[index - 1] as string | undefined
-                    const letterAfterWord = finished[lastIndex] as
-                        | string
-                        | undefined
 
-                    let matched = true
-
-                    if (!_.isUndefined(prevLetter)) {
-                        if (spaceStart) {
-                            console.log(prevLetter, prevLetter.match(/\n/))
-                            if (_.isNull(prevLetter.match(/\n/))) {
-                                if (_.isNull(prevLetter.match(/\s/))) {
-                                    matched = false
-                                }
-                            }
-                        }
-                    }
-
-                    if (!_.isUndefined(letterAfterWord)) {
-                        if (spaceEnd && _.isNull(letterAfterWord.match(/\s/))) {
-                            matched = false
-                        }
-                    }
-
-                    const compareString = (value: string) =>
-                        `${finished.substring(
-                            0,
-                            index
-                        )}${value}${finished.substring(
-                            lastIndex,
-                            finished.length
-                        )}`
-
-                    if (matched) {
-                        finished = compareString(
-                            `<<${native.split('').join(letterPattern)}>>`
-                        )
-                    } else {
-                        finished = compareString(
-                            finished
-                                .substring(index, lastIndex)
-                                .split('')
-                                .join(letterPattern)
-                        )
-                    }
+                    finished = `${finished.substring(0, index)}<<${native
+                        .split('')
+                        .join(letterPattern)}>>${finished.substring(
+                        lastIndex,
+                        finished.length
+                    )}`
                 }
             }, text)
             .replace(new RegExp(letterPattern, 'gim'), '')
             .split(/<<|>>/)
-    }, [text, words, getCurrentWords, spaceStart, spaceEnd])
+    }, [text, words, getCurrentWords])
 
     const langs = useLangs(reverse)
 
@@ -172,26 +130,6 @@ export const ReadPage = () => {
             <Card>
                 <CardContent>
                     <ReverseLangs reverse={reverse} setReverse={setReverse} />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={spaceStart}
-                                onChange={(e) =>
-                                    setSpaceStart(e.target.checked)
-                                }
-                            />
-                        }
-                        label="take into account the gap at the beginning"
-                    />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={spaceEnd}
-                                onChange={(e) => setSpaceEnd(e.target.checked)}
-                            />
-                        }
-                        label="take into account the space at the end"
-                    />
                     <TextField
                         maxRows={5}
                         multiline
