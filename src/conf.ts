@@ -84,7 +84,7 @@ export const langs = [
     ['Divehi, Dhivehi, Maldivian', 'dv'],
     ['Dutch', 'nl'],
     ['Dzongkha', 'dz'],
-    ['English', 'en-EN'],
+    ['English', 'en'],
     ['Esperanto', 'eo'],
     ['Estonian', 'et'],
     ['Ewe', 'ee'],
