@@ -45,20 +45,69 @@ export const ReadPage = () => {
 
     const preparedText = useMemo(() => {
         const letterPattern = 'usdybfiuxweryitchjxgwuytxewurftxeruvytu'
-        const makeRegExp = (w: string) => new RegExp(_.escapeRegExp(w), 'gim')
-        const buildWord = (word: string) =>
-            `${spaceStart ? ' ' : ''}${word}${spaceEnd ? ' ' : ''}`
+        const makeRegExp = (w: string) => new RegExp(_.escapeRegExp(w), 'im')
 
         return _.sortBy(words, (w) => getCurrentWords(w).native.length)
             .reverse()
-            .reduce<string>((acc, word) => {
+            .reduce<string>((text, word) => {
                 const { native } = getCurrentWords(word)
-                return acc.replace(
-                    makeRegExp(buildWord(native)),
-                    buildWord(`<<${native.split('').join(letterPattern)}>>`)
-                )
+                const regEx = makeRegExp(native)
+                let finished = text
+
+                while (true) {
+                    const index = finished.match(regEx)?.index //fix
+
+                    if (_.isUndefined(index)) return finished
+
+                    const lastIndex = index + native.length
+                    const prevLetter = finished[index - 1] as string | undefined
+                    const letterAfterWord = finished[lastIndex] as
+                        | string
+                        | undefined
+
+                    let matched = true
+
+                    if (!_.isUndefined(prevLetter)) {
+                        if (spaceStart) {
+                            console.log(prevLetter, prevLetter.match(/\n/))
+                            if (_.isNull(prevLetter.match(/\n/))) {
+                                if (_.isNull(prevLetter.match(/\s/))) {
+                                    matched = false
+                                }
+                            }
+                        }
+                    }
+
+                    if (!_.isUndefined(letterAfterWord)) {
+                        if (spaceEnd && _.isNull(letterAfterWord.match(/\s/))) {
+                            matched = false
+                        }
+                    }
+
+                    const compareString = (value: string) =>
+                        `${finished.substring(
+                            0,
+                            index
+                        )}${value}${finished.substring(
+                            lastIndex,
+                            finished.length
+                        )}`
+
+                    if (matched) {
+                        finished = compareString(
+                            `<<${native.split('').join(letterPattern)}>>`
+                        )
+                    } else {
+                        finished = compareString(
+                            finished
+                                .substring(index, lastIndex)
+                                .split('')
+                                .join(letterPattern)
+                        )
+                    }
+                }
             }, text)
-            .replace(makeRegExp(letterPattern), '')
+            .replace(new RegExp(letterPattern, 'gim'), '')
             .split(/<<|>>/)
     }, [text, words, getCurrentWords, spaceStart, spaceEnd])
 
