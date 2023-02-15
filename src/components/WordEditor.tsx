@@ -41,7 +41,7 @@ export const WordEditor: FC<{
             !_.isUndefined(word)
                 ? 0
                 : findWords(words || [], native, translation).length,
-        [words, native, translation]
+        [words, native, translation, word]
     )
 
     const save = useCallback(async () => {

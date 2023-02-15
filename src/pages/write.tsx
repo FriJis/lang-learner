@@ -54,7 +54,6 @@ export const WritePage = () => {
         await updater?.success(compared - hintRatio * 2)
 
         setPrev(word)
-        setShowPrev(true)
         sayNative(word.native)
         sayTranslation(word.translation)
     }, [result, word, updater, helper])
@@ -76,13 +75,18 @@ export const WritePage = () => {
     const idk = useCallback(() => {
         if (!word) return
         setPrev(word)
-        setShowPrev(true)
         sayNative(word.native)
         sayTranslation(word.translation)
         updater.fail()
         generate()
         inputRef.current?.click()
     }, [word, generate, updater, inputRef])
+
+    useEffect(() => {
+        if (!prev) return
+        setShowPrev(true)
+        return () => setShowPrev(false)
+    }, [prev])
 
     usePressBtn(
         useCallback(
