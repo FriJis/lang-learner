@@ -10,36 +10,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [14.x, 16.x, 18.x]
-
     steps:
     - uses: actions/checkout@v3
 
-    - name: Git preparing
-      run: |
-        mkdir git-page
-        cd ./git-page
-        git clone git@github.com:FriJis/lang-learner-page.git .
-        git config user.name "Github action"
-        git config user.email "egorik580@gmail.com"
-        find ' -not -path "./.git/*" -delete
-        cd ..
-        
-        
     - name: Build
       run: |
         yarn
         yarn build
         
     - name: Copy
-      run: cp -r ./build/* ./git-page
+      run: |
+        mkdir git-page
+        cp -r ./build/* ./git-page
       
     - name: Commit and push
-      run: |
-        cd ./git-page
-        git add .
-        git commit -m "Updated by github action"
-        git push origin master
+      uses: cpina/github-action-push-to-another-repository@ssh-deploy-key
+      env:
+        SSH_DEPLOY_KEY: ${{ secrets.WORKFLOW_DEPLOY_KEY }}
+      with:
+        source-directory: git-page/
+        destination-github-username: 'FriJis'
+        destination-repository-name: 'lang-learner-page'
+        user-email: egorik580@gmail.com
+        commit-message: pushed from lang-learner
+        target-branch: master
                 
