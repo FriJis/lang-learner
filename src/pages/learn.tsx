@@ -95,7 +95,11 @@ export const LearnPage = () => {
                 <CardContent>
                     <Typography
                         align="center"
-                        onMouseEnter={() => sayNative(word?.native || '')}
+                        onMouseEnter={() =>
+                            reverse
+                                ? sayTranslation(word?.translation || '')
+                                : sayNative(word?.native || '')
+                        }
                         onMouseLeave={() => window.speechSynthesis.cancel()}
                     >
                         {reverse ? word?.translation : word?.native || ''}{' '}
