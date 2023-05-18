@@ -2,8 +2,11 @@ import {
     Button,
     CardActions,
     CardContent,
+    Checkbox,
     Dialog,
     DialogTitle,
+    FormControlLabel,
+    FormGroup,
     Grid,
     Typography,
 } from '@mui/material'
@@ -23,8 +26,10 @@ export const LearnPage = () => {
     const [word, setWord] = useState<Word | null>(null)
     const [prev, setPrev] = useState<Word | null>(null)
     const [showPrev, setShowPrev] = useState(false)
+    const [langChanging, setLangChanging] = useState(false)
+    const [reverse, setReverse] = useState(true)
 
-    const [translations, setTranslations] = useState<string[]>([])
+    const [translations, setTranslations] = useState<Word[]>([])
 
     const [countWords] = useLS(lsConf.count_words)
     const [learnFirst] = useLS(lsConf.learn_first)
@@ -32,6 +37,8 @@ export const LearnPage = () => {
     const updater = useUpdateProgress(word)
 
     const generate = useCallback(async () => {
+        if (_.random(0, 100) <= 50) setReverse((o) => !o)
+
         const wordsToLearn = await composeWords({
             learnFirst,
             prev: prev || undefined,
@@ -48,26 +55,23 @@ export const LearnPage = () => {
         )
 
         setWord(randomWord)
-        setTranslations(
-            _.shuffle([
-                randomWord.translation,
-                ...preparedWords.map((w) => w.translation),
-            ])
-        )
+        setTranslations(_.shuffle([randomWord, ...preparedWords]))
     }, [countWords, learnFirst, prev])
 
     const compare = useCallback(
-        async (translation?: string) => {
+        async (translation?: Word) => {
             if (!word) return
 
-            if (word.translation === translation) {
+            if (word.id === translation?.id) {
                 await updater?.success()
-            } else {
-                sayNative(word.native)
-                sayTranslation(word.translation)
-                setShowPrev(true)
-                await updater?.fail()
+                setPrev(word)
+                return
             }
+            sayNative(word.native)
+            sayTranslation(word.translation)
+            setShowPrev(true)
+            await updater?.fail()
+
             setPrev(word)
         },
         [word, updater]
@@ -94,23 +98,27 @@ export const LearnPage = () => {
                         onMouseEnter={() => sayNative(word?.native || '')}
                         onMouseLeave={() => window.speechSynthesis.cancel()}
                     >
-                        {word?.native || ''}{' '}
+                        {reverse ? word?.translation : word?.native || ''}{' '}
                         {!!word?.info && <Info word={word}></Info>}
                     </Typography>
                 </CardContent>
                 <CardActions>
                     <Grid container justifyContent="center">
                         {translations.map((t) => (
-                            <Grid item key={t}>
+                            <Grid item key={t.id}>
                                 <Button
                                     color="success"
                                     onClick={() => compare(t)}
-                                    onMouseEnter={() => sayTranslation(t)}
+                                    onMouseEnter={() =>
+                                        reverse
+                                            ? sayNative(t.native)
+                                            : sayTranslation(t.translation)
+                                    }
                                     onMouseLeave={() =>
                                         window.speechSynthesis.cancel()
                                     }
                                 >
-                                    {t}
+                                    {reverse ? t.native : t.translation}
                                 </Button>
                             </Grid>
                         ))}
@@ -125,6 +133,21 @@ export const LearnPage = () => {
                         </Grid>
                     </Grid>
                 </CardActions>
+            </Card>
+            <Card>
+                <CardContent>
+                    <FormGroup>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    value={langChanging}
+                                    onChange={() => setLangChanging((o) => !o)}
+                                />
+                            }
+                            label="Realtime language changing"
+                        />
+                    </FormGroup>
+                </CardContent>
             </Card>
         </>
     )
