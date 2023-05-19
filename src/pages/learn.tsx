@@ -37,7 +37,11 @@ export const LearnPage = () => {
     const updater = useUpdateProgress(word)
 
     const generate = useCallback(async () => {
-        if (_.random(0, 100) <= 50) setReverse((o) => !o)
+        setReverse((o) => {
+            if (!langChanging) return false
+            if (_.random(0, 100) <= 50) return !o
+            return !o
+        })
 
         const wordsToLearn = await composeWords({
             learnFirst,
@@ -56,7 +60,7 @@ export const LearnPage = () => {
 
         setWord(randomWord)
         setTranslations(_.shuffle([randomWord, ...preparedWords]))
-    }, [countWords, learnFirst, prev])
+    }, [countWords, learnFirst, prev, langChanging])
 
     const compare = useCallback(
         async (translation?: Word) => {
