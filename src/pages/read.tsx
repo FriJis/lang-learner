@@ -8,23 +8,16 @@ import {
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { Card } from '../components/hoc/Card'
 import { ReverseLangs } from '../components/Reverse'
-import { WordEditor } from '../components/WordEditor'
-import { lsConf } from '../conf'
 import { useLangs } from '../hooks/useLangs'
-import { useLS } from '../hooks/useLS'
 import { Word as IWord } from '../types/word'
-import { getLangByVoiceURI, normalize, say } from '../utils'
+import { normalize, say } from '../utils'
 import { getWords } from '../utils/db'
+import { PopoverHelper } from '../components/PopoverHelper'
 
 export const ReadPage = () => {
-    const [nativeWord, setNativeWord] = useState('')
-    const [translationWord, setTranslationWord] = useState('')
-    const [showEditor, setShowEditor] = useState(false)
-    const textRef = useRef<HTMLPreElement>(null)
-
     const [reverse, setReverse] = useState(true)
 
     const [text, setText] = useState('')
@@ -58,44 +51,6 @@ export const ReadPage = () => {
     }, [text, words, getCurrentWords])
 
     const langs = useLangs(reverse)
-
-    const [translator] = useLS(lsConf.translator)
-
-    const showTranslation = useCallback(
-        (text: string) => {
-            if (!text) return
-
-            const link = translator
-                .replaceAll(
-                    '{{translationLang}}',
-                    getLangByVoiceURI(langs.translation.key || '') || ''
-                )
-                .replaceAll(
-                    '{{nativeLang}}',
-                    getLangByVoiceURI(langs.native.key || '') || ''
-                )
-                .replaceAll('{{text}}', text.trim())
-            window.open(link, 'translator')
-            setShowEditor(true)
-            setNativeWord('')
-            setTranslationWord('')
-            if (reverse) return setTranslationWord(text)
-            setNativeWord(text)
-        },
-        [langs, translator, reverse]
-    )
-
-    useEffect(() => {
-        const { current } = textRef
-        if (!current) return
-        const h = () => {
-            const text = document.getSelection()?.toString()
-            if (!text) return
-            showTranslation(text)
-        }
-        current.addEventListener('mouseup', h)
-        return () => current.removeEventListener('mouseup', h)
-    }, [showTranslation, textRef])
 
     const listen = useCallback(() => {
         if (window.speechSynthesis.speaking)
@@ -136,23 +91,19 @@ export const ReadPage = () => {
                     </Typography>
                 </CardContent>
                 <CardContent>
-                    <Typography
-                        component="pre"
-                        whiteSpace={'pre-wrap'}
-                        ref={textRef}
-                    >
-                        {preparedText.map((pr, i) => (
-                            <Word words={words || []} word={pr} key={i}></Word>
-                        ))}
-                    </Typography>
+                    <PopoverHelper reverse={reverse}>
+                        <Typography component="pre" whiteSpace={'pre-wrap'}>
+                            {preparedText.map((pr, i) => (
+                                <Word
+                                    words={words || []}
+                                    word={pr}
+                                    key={i}
+                                ></Word>
+                            ))}
+                        </Typography>
+                    </PopoverHelper>
                 </CardContent>
             </Card>
-            <WordEditor
-                nativeState={[nativeWord, setNativeWord]}
-                translationState={[translationWord, setTranslationWord]}
-                show={showEditor}
-                onClose={() => setShowEditor(false)}
-            ></WordEditor>
         </>
     )
 }
@@ -161,26 +112,34 @@ const Word: FC<{
     word: string
     words: IWord[]
 }> = ({ word, words }) => {
-    const mappedWord = useMemo(
-        () =>
-            new Map<string, string>([
-                ...words.map(
-                    (w) => [w.native, w.translation] as [string, string]
-                ),
-                ...words.map(
-                    (w) => [w.translation, w.native] as [string, string]
-                ),
-            ]),
-        [words]
-    )
-    const translation = useMemo(
-        () => mappedWord.get(normalize(word)),
-        [word, mappedWord]
-    )
+    const translation = useMemo(() => {
+        const found = words.find(
+            (w) =>
+                normalize(w.native) === normalize(word) ||
+                normalize(w.translation) === normalize(word)
+        )
+        if (!found) return
+
+        return {
+            translation:
+                normalize(found.native) === normalize(word)
+                    ? found.translation
+                    : found.native,
+            progress: found.progress,
+        }
+    }, [word, words])
+
     if (!translation) return <span>{word}</span>
     return (
-        <Tooltip title={translation}>
-            <span style={{ backgroundColor: 'wheat' }}>{word}</span>
+        <Tooltip title={translation.translation}>
+            <span
+                style={{
+                    backgroundColor:
+                        translation.progress >= 1 ? 'wheat' : 'pink',
+                }}
+            >
+                {word}
+            </span>
         </Tooltip>
     )
 }
