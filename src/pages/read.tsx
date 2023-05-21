@@ -41,29 +41,17 @@ export const ReadPage = () => {
 
     const preparedText = useMemo(() => {
         const letterPattern = 'usdybfiuxweryitchjxgwuytxewurftxeruvytu'
-        const makeRegExp = (w: string) => new RegExp(_.escapeRegExp(w), 'im')
+        const makeRegExp = (w: string) => new RegExp(_.escapeRegExp(w), 'gim')
 
         return _.sortBy(words, (w) => getCurrentWords(w).native.length)
             .reverse()
             .reduce<string>((text, word) => {
                 const { native } = getCurrentWords(word)
                 const regEx = makeRegExp(native)
-                let finished = text
-
-                while (true) {
-                    const index = finished.match(regEx)?.index //fix
-
-                    if (_.isUndefined(index)) return finished
-
-                    const lastIndex = index + native.length
-
-                    finished = `${finished.substring(0, index)}<<${native
-                        .split('')
-                        .join(letterPattern)}>>${finished.substring(
-                        lastIndex,
-                        finished.length
-                    )}`
-                }
+                return text.replace(
+                    regEx,
+                    `<<${native.split('').join(letterPattern)}>>`
+                )
             }, text)
             .replace(new RegExp(letterPattern, 'gim'), '')
             .split(/<<|>>/)
