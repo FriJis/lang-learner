@@ -7,6 +7,9 @@ import {
     CardActions,
     Button,
     Box,
+    ListItemButton,
+    ListItemSecondaryAction,
+    IconButton,
 } from '@mui/material'
 import {
     FC,
@@ -29,6 +32,7 @@ import { WordEditor } from './WordEditor'
 import { useLangs } from '../hooks/useLangs'
 import { useLS } from '../hooks/useLS'
 import { lsConf } from '../conf'
+import { Word as IWord } from '../types/word'
 
 export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
     children,
@@ -109,6 +113,12 @@ export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
         window.speechSynthesis.cancel()
     }, [])
 
+    const listen = (word: IWord) => {
+        window.speechSynthesis.cancel()
+        sayTranslation(word.translation)
+        sayNative(word.native)
+    }
+
     return (
         <>
             <Box ref={textRef}>{children}</Box>
@@ -141,6 +151,11 @@ export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
                                         reverse ? word.native : word.translation
                                     }
                                 />
+                                <ListItemSecondaryAction>
+                                    <IconButton onClick={() => listen(word)}>
+                                        <i className="fa-solid fa-play"></i>
+                                    </IconButton>
+                                </ListItemSecondaryAction>
                             </ListItem>
                         ))}
                     </List>
