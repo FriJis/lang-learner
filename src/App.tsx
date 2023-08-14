@@ -11,6 +11,7 @@ import { ListPage } from './pages/list'
 import { ListenPage } from './pages/listen'
 import { ReadPage } from './pages/read'
 import { WritePage } from './pages/write'
+import { GenerateChatGPTPage } from './pages/generateChatGPT'
 
 function App() {
     return (
@@ -96,6 +97,21 @@ function App() {
                                         label: 'Control test',
                                         value: 'controlTest',
                                         component: <ControlWorkSettings />,
+                                    },
+                                ]}
+                            />
+                        ),
+                    },
+                    {
+                        label: 'Generate',
+                        value: 'generate',
+                        component: (
+                            <PageManager
+                                pages={[
+                                    {
+                                        label: 'Chat-GPT',
+                                        value: 'chatgpt',
+                                        component: <GenerateChatGPTPage />,
                                     },
                                 ]}
                             />
