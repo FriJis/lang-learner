@@ -50,7 +50,7 @@ export const GenerateChatGPTPage = () => {
                 : '',
             `. The text should not exceed ${fixedCount} words.`,
         ].join('')
-    }, [words, learned, notLearned, reversed, langs, count])
+    }, [words, learned, notLearned, reversed, langs, count, topic])
 
     return (
         <Card>
