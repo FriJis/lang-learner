@@ -2,19 +2,15 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
-import './assets/fa/css/all.css'
 import './i18n/index'
 import { AppContextProvider } from './ctx/app'
-import { Container } from '@mui/material'
-// const store = configureStore({counter: counter.reducer})
+import './styles/global.scss'
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
 root.render(
     <React.StrictMode>
         <AppContextProvider>
-            <Container>
-                <App />
-            </Container>
+            <App />
         </AppContextProvider>
     </React.StrictMode>
 )

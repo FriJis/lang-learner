@@ -3,12 +3,13 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
+    Slider,
     TextField,
     Typography,
 } from '@mui/material'
 import _ from 'lodash'
 import moment from 'moment'
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 import { State } from '../types/app'
 import { StatisticsType } from '../types/statistics'
 import { Word } from '../types/word'
@@ -26,12 +27,14 @@ export const WordEditor: FC<{
     const [native, setNative] = nativeState
     const [translation, setTranslation] = translationState
     const [info, setInfo] = useState(word?.info || '')
+    const [progress, setProgress] = useState(word?.progress || 0)
     const { words, nativeLang, translationLang } = useAppContext()
 
     useEffect(() => {
         setNative(word?.native || '')
         setTranslation(word?.translation || '')
         setInfo(word?.info || '')
+        setProgress(word?.progress || 0)
     }, [word, setNative, setTranslation])
 
     const count = useMemo(
@@ -42,7 +45,7 @@ export const WordEditor: FC<{
         [words, native, translation, word]
     )
 
-    const save = useCallback(async () => {
+    const save = async () => {
         const collection = await getCollection()
         const collectionId = collection?.id
         if (!collectionId) return
@@ -50,6 +53,7 @@ export const WordEditor: FC<{
             native: normalize(native),
             translation: normalize(translation),
             info,
+            progress,
         }
 
         if (!word) {
@@ -62,7 +66,6 @@ export const WordEditor: FC<{
                 })
                 await db.words.add({
                     ...data,
-                    progress: 0,
                     collectionId,
                 })
             })
@@ -75,7 +78,7 @@ export const WordEditor: FC<{
         setTranslation('')
 
         onClose()
-    }, [word, native, translation, onClose, info, setNative, setTranslation])
+    }
 
     return (
         <Dialog open={show} onClose={onClose}>
@@ -101,6 +104,15 @@ export const WordEditor: FC<{
                     value={info}
                     onChange={(e) => setInfo(e.target.value)}
                 ></TextField>
+                <Typography marginTop={'10px'}>
+                    Progress: {_.round(progress, 2)}
+                </Typography>
+                <Slider
+                    max={1}
+                    step={0.01}
+                    value={progress}
+                    onChange={(e, v) => setProgress(_.isArray(v) ? v[0] : v)}
+                ></Slider>
                 {!word && (
                     <Typography marginTop={'10px'}>
                         Already exists: {count}

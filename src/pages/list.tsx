@@ -1,20 +1,11 @@
 import {
     Backdrop,
-    Button,
     CircularProgress,
     IconButton,
     Input,
-    Slider,
     Snackbar,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
     Typography,
 } from '@mui/material'
-import _ from 'lodash'
 import { FC, useCallback, useMemo, useRef, useState } from 'react'
 import { Nothing } from '../components/Nothing'
 import { WordEditor } from '../components/WordEditor'
@@ -24,6 +15,15 @@ import { findWords, sayNative, sayTranslation } from '../utils'
 import { db, getCollection } from '../utils/db'
 import { swapWord } from '../utils/db'
 import { useAppContext } from '../ctx/app'
+import styles from './list.module.scss'
+import { colors } from '../conf'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
+import AddIcon from '@mui/icons-material/Add'
+import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
+import PlayCircleIcon from '@mui/icons-material/PlayCircle'
 
 export const ListPage = () => {
     const [native, setNative] = useState('')
@@ -85,84 +85,74 @@ export const ListPage = () => {
                 autoHideDuration={1000}
             ></Snackbar>
 
-            <TableContainer>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>{nativeLang?.name}</TableCell>
-                            <TableCell width={50}>
-                                <IconButton onClick={changeSides}>
-                                    <i className="fa-solid fa-arrow-right-arrow-left"></i>
-                                </IconButton>
-                            </TableCell>
-                            <TableCell>
-                                {translationLang?.name}{' '}
-                                <IconButton
-                                    onClick={() =>
-                                        setShowTranslation((o) => !o)
-                                    }
-                                    size="small"
-                                >
-                                    {showTranslation ? (
-                                        <i className="fa-solid fa-eye-slash"></i>
-                                    ) : (
-                                        <i className="fa-solid fa-eye"></i>
-                                    )}
-                                </IconButton>
-                            </TableCell>
-                            <TableCell width={300}>Progress</TableCell>
-                            <TableCell>
-                                <Button
-                                    onClick={() => setShowAdd(true)}
-                                    color="success"
-                                >
-                                    <i className="fa-solid fa-plus"></i>
-                                </Button>
-                            </TableCell>
-                            <TableCell></TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell>
-                                <Input
-                                    value={native}
-                                    ref={nativeRef}
-                                    onChange={(e) => setNative(e.target.value)}
-                                    placeholder={`Native...`}
-                                ></Input>
-                            </TableCell>
-                            <TableCell></TableCell>
-                            <TableCell>
-                                <Input
-                                    value={translation}
-                                    onChange={(e) =>
-                                        setTranslation(e.target.value)
-                                    }
-                                    placeholder="Translation..."
-                                ></Input>
-                            </TableCell>
-                            <TableCell>
-                                {words?.reduce(
-                                    (acc, w) =>
-                                        w.progress >= 1 ? acc + 1 : acc,
-                                    0
-                                ) || 0}
-                                /{words?.length || 0}
-                            </TableCell>
-                            <TableCell></TableCell>
-                            <TableCell></TableCell>
-                        </TableRow>
-                        {filteredWords?.map((word) => (
-                            <WordItem
-                                word={word}
-                                key={word.id}
-                                showTranslation={showTranslation}
-                            ></WordItem>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <div className={styles.container}>
+                <div className={styles.row}>
+                    <div className={styles.word}>
+                        <Typography>{nativeLang?.name}</Typography>
+                    </div>
+                    <div className={styles.button}>
+                        <IconButton onClick={changeSides}>
+                            <CompareArrowsIcon />
+                        </IconButton>
+                    </div>
+                    <div className={styles.word}>
+                        <Typography>{translationLang?.name} </Typography>
+                        <IconButton
+                            onClick={() => setShowTranslation((o) => !o)}
+                        >
+                            {showTranslation ? (
+                                <VisibilityIcon />
+                            ) : (
+                                <VisibilityOffIcon />
+                            )}
+                        </IconButton>
+                    </div>
+                    <div className={styles.button} />
+                    <div className={styles.button}>
+                        <IconButton
+                            onClick={() => setShowAdd(true)}
+                            color="success"
+                        >
+                            <AddIcon />
+                        </IconButton>
+                    </div>
+                </div>
+                <div className={styles.row}>
+                    <div className={styles.word}>
+                        <Input
+                            value={native}
+                            ref={nativeRef}
+                            onChange={(e) => setNative(e.target.value)}
+                            placeholder={`Native...`}
+                        />
+                    </div>
+                    <div className={styles.button}></div>
+                    <div className={styles.word}>
+                        <Input
+                            value={translation}
+                            onChange={(e) => setTranslation(e.target.value)}
+                            placeholder="Translation..."
+                        />
+                    </div>
+                    <div className={styles.button}>
+                        <Typography>
+                            {words?.reduce(
+                                (acc, w) => (w.progress >= 1 ? acc + 1 : acc),
+                                0
+                            ) || 0}
+                            /{words?.length || 0}
+                        </Typography>
+                    </div>
+                    <div className={styles.button}></div>
+                </div>
+                {filteredWords?.map((word) => (
+                    <WordItem
+                        word={word}
+                        key={word.id}
+                        showTranslation={showTranslation}
+                    ></WordItem>
+                ))}
+            </div>
         </>
     )
 }
@@ -172,8 +162,6 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
     showTranslation,
 }) => {
     const [showEditor, setShowEditor] = useState(false)
-    const [newProgress, setNewProgress] = useState(word.progress)
-
     const nativeState = useState('')
     const translationState = useState('')
 
@@ -181,11 +169,6 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
         if (!window.confirm('Delete this word?')) return
         db.words.delete(word.id || 0)
     }, [word.id])
-
-    const updateProgress = useCallback(
-        () => db.words.update(word.id || 0, { progress: newProgress }),
-        [newProgress, word.id]
-    )
 
     const changeSides = useCallback(() => {
         swapWord(word)
@@ -196,9 +179,16 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
         return sayNative(text)
     }, [])
 
-    const stopSay = useCallback(() => {
-        window.speechSynthesis.cancel()
-    }, [])
+    const bg = useMemo(() => {
+        if (word.progress >= 1) return colors.green
+        return colors.yellow
+    }, [word])
+
+    const progress = useMemo(() => {
+        if (word.progress <= 0) return 0
+        if (word.progress >= 1) return 1
+        return word.progress
+    }, [word])
 
     return (
         <>
@@ -209,55 +199,49 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
                 nativeState={nativeState}
                 translationState={translationState}
             ></WordEditor>
-            <TableRow key={word.id} onFocus={() => {}}>
-                <TableCell
-                    onMouseEnter={() => say(word.native, 'native')}
-                    onMouseLeave={() => stopSay()}
-                >
-                    <Typography>{word.native}</Typography>
-                </TableCell>
-                <TableCell>
-                    <IconButton onClick={changeSides}>
-                        <i className="fa-solid fa-arrow-right-arrow-left"></i>
+            <div className={styles.row}>
+                <div
+                    className={styles.progress}
+                    style={{ width: `${progress * 100}%`, backgroundColor: bg }}
+                />
+                <div className={styles.word}>
+                    <IconButton onClick={() => say(word.native, 'native')}>
+                        <PlayCircleIcon />
                     </IconButton>
-                </TableCell>
-
-                {showTranslation ? (
-                    <TableCell
-                        onMouseEnter={() =>
-                            say(word.translation, 'translation')
-                        }
-                        onMouseLeave={() => stopSay()}
-                    >
-                        <Typography>{word.translation}</Typography>
-                    </TableCell>
-                ) : (
-                    <TableCell>
+                    <Typography>{word.native}</Typography>
+                </div>
+                <div className={styles.button}>
+                    <IconButton onClick={changeSides}>
+                        <CompareArrowsIcon />
+                    </IconButton>
+                </div>
+                <div className={styles.word}>
+                    {showTranslation ? (
+                        <>
+                            <IconButton
+                                onClick={() =>
+                                    say(word.translation, 'translation')
+                                }
+                            >
+                                <PlayCircleIcon />
+                            </IconButton>
+                            <Typography>{word.translation}</Typography>
+                        </>
+                    ) : (
                         <Typography>...</Typography>
-                    </TableCell>
-                )}
-                <TableCell>
-                    <Slider
-                        max={1}
-                        step={0.01}
-                        value={newProgress}
-                        onChange={(e, v) =>
-                            setNewProgress(_.isArray(v) ? v[0] : v)
-                        }
-                        onChangeCommitted={updateProgress}
-                    ></Slider>
-                </TableCell>
-                <TableCell>
-                    <Button onClick={() => setShowEditor(true)} fullWidth>
-                        <i className="fa-solid fa-pen-to-square"></i>
-                    </Button>
-                </TableCell>
-                <TableCell>
-                    <Button onClick={del} fullWidth color="error">
-                        <i className="fa-solid fa-trash"></i>
-                    </Button>
-                </TableCell>
-            </TableRow>
+                    )}
+                </div>
+                <div className={styles.button}>
+                    <IconButton onClick={() => setShowEditor(true)}>
+                        <EditIcon />
+                    </IconButton>
+                </div>
+                <div className={styles.button}>
+                    <IconButton onClick={del} color="error">
+                        <DeleteIcon />
+                    </IconButton>
+                </div>
+            </div>
         </>
     )
 }

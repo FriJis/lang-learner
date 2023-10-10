@@ -3,7 +3,6 @@ import {
     ListItem,
     ListItemText,
     Popover,
-    Card as NativeCard,
     CardActions,
     Button,
     Box,
@@ -31,6 +30,7 @@ import { useLS } from '../hooks/useLS'
 import { lsConf } from '../conf'
 import { Word as IWord } from '../types/word'
 import { useAppContext } from '../ctx/app'
+import PlayCircleIcon from '@mui/icons-material/PlayCircle'
 
 export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
     children,
@@ -151,30 +151,28 @@ export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
                                 />
                                 <ListItemSecondaryAction>
                                     <IconButton onClick={() => listen(word)}>
-                                        <i className="fa-solid fa-play"></i>
+                                        <PlayCircleIcon />
                                     </IconButton>
                                 </ListItemSecondaryAction>
                             </ListItem>
                         ))}
                     </List>
                 )}
-                <NativeCard>
-                    <CardActions>
-                        <Button
-                            size="small"
-                            onClick={() =>
-                                reverse
-                                    ? sayTranslation(popoverMeta?.text || '')
-                                    : sayNative(popoverMeta?.text || '')
-                            }
-                        >
-                            listen
-                        </Button>
-                        <Button size="small" onClick={() => showTranslation()}>
-                            show translation
-                        </Button>
-                    </CardActions>
-                </NativeCard>
+                <CardActions>
+                    <Button
+                        size="small"
+                        onClick={() =>
+                            reverse
+                                ? sayTranslation(popoverMeta?.text || '')
+                                : sayNative(popoverMeta?.text || '')
+                        }
+                    >
+                        listen
+                    </Button>
+                    <Button size="small" onClick={() => showTranslation()}>
+                        show translation
+                    </Button>
+                </CardActions>
             </Popover>
             <WordEditor
                 nativeState={[nativeWord, setNativeWord]}

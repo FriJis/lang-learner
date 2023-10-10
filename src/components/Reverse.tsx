@@ -1,6 +1,7 @@
 import { IconButton, Typography } from '@mui/material'
 import { FC } from 'react'
 import { useLangs } from '../hooks/useLangs'
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 
 export const ReverseLangs: FC<{
     reverse: boolean
@@ -12,7 +13,7 @@ export const ReverseLangs: FC<{
         <Typography>
             From {nativeLang?.name}{' '}
             <IconButton onClick={() => setReverse(!reverse)}>
-                <i className="fa-solid fa-arrow-right-arrow-left"></i>
+                <CompareArrowsIcon />
             </IconButton>{' '}
             to {translationLang?.name}
         </Typography>

@@ -41,6 +41,13 @@ export const lsConf = {
     },
 }
 
+export const colors = {
+    green: '#9bd19c',
+    blue: '#2596be',
+    red: '#d19b9b',
+    yellow: '#d1d19b',
+}
+
 export const languagesConfig = new Map([
     ['ar-SA', 'Arabic'],
     ['bn-BD', 'Bangla'],
