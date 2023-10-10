@@ -16,7 +16,8 @@ import { useLS } from '../hooks/useLS'
 import { StatisticsType } from '../types/statistics'
 import { Word } from '../types/word'
 import { getRandomValueFromArray, sayNative, sayTranslation } from '../utils'
-import { db, getCollection, getWords } from '../utils/db'
+import { db, getWords } from '../utils/db'
+import { useAppContext } from '../ctx/app'
 
 export const ControlWorkPage = () => {
     const [checkedWords, setCheckedWords] = useState<number[]>([])
@@ -28,6 +29,7 @@ export const ControlWorkPage = () => {
 
     const [countWords] = useLS(lsConf.count_words)
     const [controlWorkTimer] = useLS(lsConf.control_work_timer)
+    const { collection } = useAppContext()
 
     const generate = useCallback(async () => {
         const checkedSet = new Set(checkedWords)
@@ -61,7 +63,6 @@ export const ControlWorkPage = () => {
                     if (word.translation !== translation) {
                         await db.words.update(word, { progress: 0 })
                     } else {
-                        const collection = await getCollection()
                         const collectionId = collection?.id
                         if (!collectionId)
                             throw new Error('collection is undefined')
@@ -82,7 +83,7 @@ export const ControlWorkPage = () => {
 
             setShowTranslations(false)
         },
-        [word]
+        [word, collection]
     )
 
     useEffect(() => {

@@ -4,12 +4,18 @@ import App from './App'
 import reportWebVitals from './reportWebVitals'
 import './assets/fa/css/all.css'
 import './i18n/index'
+import { AppContextProvider } from './ctx/app'
+import { Container } from '@mui/material'
 // const store = configureStore({counter: counter.reducer})
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
 root.render(
     <React.StrictMode>
-        <App />
+        <AppContextProvider>
+            <Container>
+                <App />
+            </Container>
+        </AppContextProvider>
     </React.StrictMode>
 )
 

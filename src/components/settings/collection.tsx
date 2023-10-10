@@ -24,17 +24,20 @@ import {
     normalize,
     readTextFromFile,
 } from '../../utils'
-import { db, getCollection, getStatistics, getWords } from '../../utils/db'
+import { db, getWords } from '../../utils/db'
 import { Half } from '../Half'
 import { Card } from '../hoc/Card'
+import { useAppContext } from '../../ctx/app'
 
 export const CollectionSettings = () => {
     const [err, setErr] = useState(false)
     const [loading, setLoading] = useState(false)
 
     const collections = useLiveQuery(() => db.collections.toArray())
-    const collection = useLiveQuery(() => getCollection())
+    const { collection, statistics, words } = useAppContext()
+
     const nativeLang = useMemo(() => collection?.nativeLang || '', [collection])
+
     const translationLang = useMemo(
         () => collection?.translationLang || '',
         [collection]
@@ -50,9 +53,7 @@ export const CollectionSettings = () => {
     )
 
     const exportWords = useCallback(async () => {
-        const collection = await getCollection()
         if (!collection) return
-        const words = await getWords()
 
         download(
             JSON.stringify(
@@ -69,52 +70,56 @@ export const CollectionSettings = () => {
             `${collection.name}_words.json`,
             'application/json'
         )
-    }, [])
+    }, [collection, words])
 
-    const parse = useCallback(async (exported: ExportedWord[]) => {
-        const collection = await getCollection()
-        if (!collection) return
-        const words = await getWords()
+    const parse = useCallback(
+        async (exported: ExportedWord[]) => {
+            if (!collection) return
+            const words = await getWords()
 
-        const mapByNative = new Map(words.map((w) => [w.native, w]))
-        const mapByTranslation = new Map(words.map((w) => [w.translation, w]))
-
-        db.transaction('rw', db.words, async () => {
-            await asyncMap(
-                exported,
-                ([native, translation, progress, info]) => {
-                    if (native.length <= 0) throw new Error()
-                    if (translation.length <= 0) throw new Error()
-
-                    const exNative = mapByNative.get(native)
-                    if (exNative)
-                        return db.words.update(exNative, {
-                            translation,
-                            progress,
-                        })
-
-                    const exTranslation = mapByTranslation.get(translation)
-
-                    const data = {
-                        translation: normalize(translation),
-                        native: normalize(native),
-                        progress: +progress,
-                        info: info || '',
-                    }
-
-                    if (exTranslation)
-                        return db.words.update(exTranslation, data)
-
-                    return db.words.add({
-                        ...data,
-                        collectionId: collection.id || 0,
-                    })
-                }
+            const mapByNative = new Map(words.map((w) => [w.native, w]))
+            const mapByTranslation = new Map(
+                words.map((w) => [w.translation, w])
             )
-        }).catch(() => {
-            throw new Error()
-        })
-    }, [])
+
+            db.transaction('rw', db.words, async () => {
+                await asyncMap(
+                    exported,
+                    ([native, translation, progress, info]) => {
+                        if (native.length <= 0) throw new Error()
+                        if (translation.length <= 0) throw new Error()
+
+                        const exNative = mapByNative.get(native)
+                        if (exNative)
+                            return db.words.update(exNative, {
+                                translation,
+                                progress,
+                            })
+
+                        const exTranslation = mapByTranslation.get(translation)
+
+                        const data = {
+                            translation: normalize(translation),
+                            native: normalize(native),
+                            progress: +progress,
+                            info: info || '',
+                        }
+
+                        if (exTranslation)
+                            return db.words.update(exTranslation, data)
+
+                        return db.words.add({
+                            ...data,
+                            collectionId: collection.id || 0,
+                        })
+                    }
+                )
+            }).catch(() => {
+                throw new Error()
+            })
+        },
+        [collection]
+    )
 
     const importWords = useCallback(
         async (e: ChangeEvent<HTMLInputElement>) => {
@@ -138,7 +143,6 @@ export const CollectionSettings = () => {
         if (!confirmation) return
         setLoading(true)
         try {
-            const words = await getWords()
             await Promise.all(
                 words.map(
                     (word) =>
@@ -149,14 +153,13 @@ export const CollectionSettings = () => {
             console.error(error)
         }
         setLoading(false)
-    }, [])
+    }, [words])
 
     const deleteStatistics = useCallback(async () => {
         const confirmation = window.confirm('are you sure?')
         if (!confirmation) return
         setLoading(true)
         try {
-            const statistics = await getStatistics()
             await Promise.all(
                 statistics.map(
                     (stat) =>
@@ -167,14 +170,13 @@ export const CollectionSettings = () => {
             console.error(error)
         }
         setLoading(false)
-    }, [])
+    }, [statistics])
 
     const resetProgress = useCallback(async () => {
         const confirmation = window.confirm('are you sure?')
         if (!confirmation) return
         setLoading(true)
         try {
-            const words = await getWords()
             await Promise.all(
                 words.map((word) => db.words.update(word, { progress: 0 }))
             )
@@ -182,7 +184,7 @@ export const CollectionSettings = () => {
             console.error(error)
         }
         setLoading(false)
-    }, [])
+    }, [words])
 
     return (
         <>
@@ -296,10 +298,9 @@ export const CollectionSettings = () => {
 
 const CollectionSetting: FC<{ collection?: Collection }> = ({ collection }) => {
     const [newName, setNewName] = useState(collection?.name || '')
+    const { collection: activeCollection } = useAppContext()
 
     const update = useCallback(async () => {
-        const activeCollection = await getCollection()
-
         setNewName('')
         if (!collection)
             return db.collections.add({
@@ -307,7 +308,7 @@ const CollectionSetting: FC<{ collection?: Collection }> = ({ collection }) => {
                 name: newName,
             })
         db.collections.update(collection, { name: newName })
-    }, [collection, newName])
+    }, [collection, newName, activeCollection])
 
     const del = useCallback(() => {
         if (!collection) return

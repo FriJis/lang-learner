@@ -6,7 +6,6 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material'
-import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { Card } from '../components/hoc/Card'
@@ -14,14 +13,14 @@ import { ReverseLangs } from '../components/Reverse'
 import { useLangs } from '../hooks/useLangs'
 import { Word as IWord } from '../types/word'
 import { normalize, say } from '../utils'
-import { getWords } from '../utils/db'
 import { PopoverHelper } from '../components/PopoverHelper'
+import { useAppContext } from '../ctx/app'
 
 export const ReadPage = () => {
     const [reverse, setReverse] = useState(true)
-
     const [text, setText] = useState('')
-    const words = useLiveQuery(() => getWords())
+
+    const { words } = useAppContext()
 
     const getCurrentWords = useCallback(
         (w: IWord) => {
@@ -50,13 +49,13 @@ export const ReadPage = () => {
             .split(/<<|>>/)
     }, [text, words, getCurrentWords])
 
-    const langs = useLangs(reverse)
+    const { nativeLang } = useLangs(reverse)
 
     const listen = useCallback(() => {
         if (window.speechSynthesis.speaking)
             return window.speechSynthesis.cancel()
-        say(text, langs.native.key)
-    }, [text, langs])
+        say(text, nativeLang?.key)
+    }, [text, nativeLang])
 
     const pause = useCallback(() => {
         if (window.speechSynthesis.paused)

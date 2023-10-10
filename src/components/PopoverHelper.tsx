@@ -25,13 +25,12 @@ import {
     sayNative,
     sayTranslation,
 } from '../utils'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { getWords } from '../utils/db'
 import { WordEditor } from './WordEditor'
 import { useLangs } from '../hooks/useLangs'
 import { useLS } from '../hooks/useLS'
 import { lsConf } from '../conf'
 import { Word as IWord } from '../types/word'
+import { useAppContext } from '../ctx/app'
 
 export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
     children,
@@ -49,7 +48,7 @@ export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
     } | null>(null)
     const [open, setOpen] = useState(false)
 
-    const words = useLiveQuery(() => getWords())
+    const { words } = useAppContext()
 
     const filteredWords = useMemo(
         () =>
@@ -63,7 +62,7 @@ export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
         [words, popoverMeta?.text, reverse]
     )
 
-    const langs = useLangs(reverse)
+    const { translationLang, nativeLang } = useLangs(reverse)
 
     const [translator] = useLS(lsConf.translator)
 
@@ -74,11 +73,11 @@ export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
         const link = translator
             .replaceAll(
                 '{{translationLang}}',
-                getLangByVoiceURI(langs.translation.key || '') || ''
+                getLangByVoiceURI(translationLang?.key || '') || ''
             )
             .replaceAll(
                 '{{nativeLang}}',
-                getLangByVoiceURI(langs.native.key || '') || ''
+                getLangByVoiceURI(nativeLang?.key || '') || ''
             )
             .replaceAll('{{text}}', text.trim())
         window.open(link, 'translator')
@@ -87,7 +86,7 @@ export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
         setTranslationWord('')
         if (reverse) return setTranslationWord(text)
         setNativeWord(text)
-    }, [langs, translator, reverse, popoverMeta?.text])
+    }, [nativeLang, translationLang, translator, reverse, popoverMeta?.text])
 
     useEffect(() => {
         const current = textRef?.current

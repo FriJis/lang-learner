@@ -23,13 +23,9 @@ export async function asyncMap<T, S>(
 }
 
 export function getLangByVoiceURI(voiceURI: string) {
-    const fullLang = window.speechSynthesis
+    return window.speechSynthesis
         .getVoices()
         .find((voice) => voice.voiceURI === voiceURI)?.lang
-    if (!fullLang) return
-    const short = fullLang.split('-')[0]
-    if (!short) return
-    return short
 }
 
 export function findWords(words: Word[], native: string, translation: string) {

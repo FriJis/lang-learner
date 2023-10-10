@@ -6,16 +6,15 @@ import {
     TextField,
     Typography,
 } from '@mui/material'
-import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import moment from 'moment'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import { useLangs } from '../hooks/useLangs'
 import { State } from '../types/app'
 import { StatisticsType } from '../types/statistics'
 import { Word } from '../types/word'
 import { findWords, normalize } from '../utils'
-import { db, getCollection, getWords } from '../utils/db'
+import { db, getCollection } from '../utils/db'
+import { useAppContext } from '../ctx/app'
 
 export const WordEditor: FC<{
     word?: Word
@@ -27,8 +26,7 @@ export const WordEditor: FC<{
     const [native, setNative] = nativeState
     const [translation, setTranslation] = translationState
     const [info, setInfo] = useState(word?.info || '')
-    const langs = useLangs()
-    const words = useLiveQuery(() => getWords())
+    const { words, nativeLang, translationLang } = useAppContext()
 
     useEffect(() => {
         setNative(word?.native || '')
@@ -84,14 +82,14 @@ export const WordEditor: FC<{
             <DialogContent sx={{ '& .MuiTextField-root': { mt: 1 } }}>
                 <TextField
                     fullWidth
-                    label={langs.native.name}
+                    label={nativeLang?.name}
                     variant="standard"
                     value={native}
                     onChange={(e) => setNative(e.target.value)}
                 ></TextField>
                 <TextField
                     fullWidth
-                    label={langs.translation.name}
+                    label={translationLang?.name}
                     variant="standard"
                     value={translation}
                     onChange={(e) => setTranslation(e.target.value)}

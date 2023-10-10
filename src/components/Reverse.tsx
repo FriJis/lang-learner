@@ -6,15 +6,15 @@ export const ReverseLangs: FC<{
     reverse: boolean
     setReverse: (val: boolean) => void
 }> = ({ reverse, setReverse }) => {
-    const langs = useLangs(reverse)
+    const { nativeLang, translationLang } = useLangs(reverse)
 
     return (
         <Typography>
-            From {langs.native.name}{' '}
+            From {nativeLang?.name}{' '}
             <IconButton onClick={() => setReverse(!reverse)}>
                 <i className="fa-solid fa-arrow-right-arrow-left"></i>
             </IconButton>{' '}
-            to {langs.translation.name}
+            to {translationLang?.name}
         </Typography>
     )
 }

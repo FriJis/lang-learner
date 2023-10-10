@@ -16,7 +16,8 @@ import { useLangs } from '../hooks/useLangs'
 import { useLS } from '../hooks/useLS'
 import { StatisticsType } from '../types/statistics'
 import { say } from '../utils'
-import { db, getCollection } from '../utils/db'
+import { db } from '../utils/db'
+import { useAppContext } from '../ctx/app'
 
 export const AuditionPage = () => {
     const [reverse, setReverse] = useState(true)
@@ -37,9 +38,11 @@ export const AuditionPage = () => {
 
     const [speakRate, setSpeakRate] = useLS(lsConf.speakRate)
 
-    const langs = useLangs(reverse)
+    const { nativeLang } = useLangs(reverse)
 
     const [started, setStarted] = useState(false)
+
+    const { collection } = useAppContext()
 
     const start = useCallback(() => {
         setCurrentIndex(0)
@@ -55,8 +58,8 @@ export const AuditionPage = () => {
 
     const speak = useCallback(() => {
         window.speechSynthesis.cancel()
-        say(currentPreparedText, langs.native.key)
-    }, [currentPreparedText, langs])
+        say(currentPreparedText, nativeLang?.key)
+    }, [currentPreparedText, nativeLang])
 
     const save = useCallback(() => {
         setUserResults((o) => [...o, userText])
@@ -66,16 +69,15 @@ export const AuditionPage = () => {
     const next = useCallback(() => {
         setCurrentIndex((o) => o + 1)
         window.speechSynthesis.cancel()
-        say(nextPreparedText, langs.native.key)
+        say(nextPreparedText, nativeLang?.key)
         save()
-    }, [nextPreparedText, langs.native.key, save])
+    }, [nextPreparedText, nativeLang?.key, save])
 
     const finish = useCallback(async () => {
         window.speechSynthesis.cancel()
         setFinished(true)
         setStarted(false)
         save()
-        const collection = await getCollection()
         const collectionId = collection?.id
         if (collectionId) {
             await db.statistics.add({
@@ -85,7 +87,7 @@ export const AuditionPage = () => {
                 createdAt: moment.utc().toISOString(),
             })
         }
-    }, [save, originText])
+    }, [save, originText, collection])
 
     return (
         <Card>

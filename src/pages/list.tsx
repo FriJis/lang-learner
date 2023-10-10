@@ -14,7 +14,6 @@ import {
     TableRow,
     Typography,
 } from '@mui/material'
-import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { FC, useCallback, useMemo, useRef, useState } from 'react'
 import { Nothing } from '../components/Nothing'
@@ -22,8 +21,9 @@ import { WordEditor } from '../components/WordEditor'
 import { useLangs } from '../hooks/useLangs'
 import { Word } from '../types/word'
 import { findWords, sayNative, sayTranslation } from '../utils'
-import { db, getCollection, getWords } from '../utils/db'
+import { db, getCollection } from '../utils/db'
 import { swapWord } from '../utils/db'
+import { useAppContext } from '../ctx/app'
 
 export const ListPage = () => {
     const [native, setNative] = useState('')
@@ -34,12 +34,11 @@ export const ListPage = () => {
     const [showBackdrop, setShowBackdrop] = useState(false)
     const [showTranslation, setShowTranslation] = useState(true)
 
+    const { words, collection } = useAppContext()
+
     const nativeRef = useRef<HTMLInputElement>(null)
-    const words = useLiveQuery(() => getWords())
 
-    const langs = useLangs()
-
-    const collection = useLiveQuery(() => getCollection())
+    const { nativeLang, translationLang } = useLangs()
 
     const filteredWords = useMemo(
         () => findWords(words || [], native, translation),
@@ -90,14 +89,14 @@ export const ListPage = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>{langs.native.name}</TableCell>
+                            <TableCell>{nativeLang?.name}</TableCell>
                             <TableCell width={50}>
                                 <IconButton onClick={changeSides}>
                                     <i className="fa-solid fa-arrow-right-arrow-left"></i>
                                 </IconButton>
                             </TableCell>
                             <TableCell>
-                                {langs.translation.name}{' '}
+                                {translationLang?.name}{' '}
                                 <IconButton
                                     onClick={() =>
                                         setShowTranslation((o) => !o)
@@ -115,7 +114,6 @@ export const ListPage = () => {
                             <TableCell>
                                 <Button
                                     onClick={() => setShowAdd(true)}
-                                    fullWidth
                                     color="success"
                                 >
                                     <i className="fa-solid fa-plus"></i>

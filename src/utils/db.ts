@@ -59,8 +59,16 @@ export async function swapWord(word: Word) {
     return newVal
 }
 
-export const getCollection = () =>
-    db.collections.toArray().then((cls) => cls.find((cl) => cl.active))
+export const getCollection = async () => {
+    const collections = await db.collections.toArray()
+    const current = collections.find((cl) => cl.active)
+
+    if (!current) {
+        return collections[0] as Collection | undefined
+    }
+
+    return current
+}
 
 export const getStatistics = async () => {
     const collection = await getCollection()

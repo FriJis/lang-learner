@@ -11,10 +11,9 @@ import {
 } from '@mui/material'
 import { Card } from '../components/hoc/Card'
 import { useMemo, useState } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { getWords } from '../utils/db'
 import { useLangs } from '../hooks/useLangs'
 import { copy } from '../utils'
+import { useAppContext } from '../ctx/app'
 
 export const GenerateChatGPTPage = () => {
     const [learned, setLearned] = useState(false)
@@ -23,25 +22,22 @@ export const GenerateChatGPTPage = () => {
     const [topic, setTopic] = useState('')
     const [count, setCount] = useState(50)
 
-    const words = useLiveQuery(getWords)
+    const { words } = useAppContext()
 
-    const langs = useLangs()
+    const { nativeLang } = useLangs(reversed)
 
     const text = useMemo(() => {
-        const learnedWords = learned
-            ? words?.filter((w) => w.progress >= 1) || []
-            : []
+        const learnedWords = learned ? words.filter((w) => w.progress >= 1) : []
         const notLearnedWords = notLearned
-            ? words?.filter((w) => w.progress < 1) || []
+            ? words.filter((w) => w.progress < 1)
             : []
         const finalWords = [...learnedWords, ...notLearnedWords]
-        const language = reversed ? langs.native : langs.translation
 
         const fixedCount = Math.abs(count) >= 200 ? 200 : Math.abs(count)
 
         return [
             'Generate a text without translation',
-            language.key ? ` in ${language.name}` : '',
+            nativeLang?.key ? ` in ${nativeLang.name}` : '',
             topic.length > 0 ? ` about ${topic}` : '',
             finalWords.length > 0
                 ? ` that includes the words: ${finalWords
@@ -50,7 +46,7 @@ export const GenerateChatGPTPage = () => {
                 : '',
             `. The text should not exceed ${fixedCount} words.`,
         ].join('')
-    }, [words, learned, notLearned, reversed, langs, count, topic])
+    }, [words, learned, notLearned, reversed, count, topic, nativeLang])
 
     return (
         <Card>
