@@ -109,9 +109,7 @@ export function convertStatisticsDataToChart(
         return diff >= 0
     })
 
-    const types = Array.from(
-        new Set(filteredStats.map((stat) => stat.type)).values()
-    )
+    const types = Array.from(new Set(Object.values(StatisticsType)).values())
 
     const dates = Array(days)
         .fill('')

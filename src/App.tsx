@@ -78,7 +78,8 @@ function App() {
                     <CardContent className={styles.firstStep}>
                         <TextField
                             fullWidth
-                            label="Your first collection"
+                            placeholder="Name your first collection"
+                            variant="standard"
                             value={newCollection}
                             onChange={(e) => setNewCollection(e.target.value)}
                         />

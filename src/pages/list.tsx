@@ -165,6 +165,8 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
     const nativeState = useState('')
     const translationState = useState('')
 
+    const { nativeLang, translationLang } = useAppContext()
+
     const del = useCallback(() => {
         if (!window.confirm('Delete this word?')) return
         db.words.delete(word.id || 0)
@@ -173,11 +175,6 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
     const changeSides = useCallback(() => {
         swapWord(word)
     }, [word])
-
-    const say = useCallback((text: string, type: 'translation' | 'native') => {
-        if (type === 'translation') return sayTranslation(text)
-        return sayNative(text)
-    }, [])
 
     const bg = useMemo(() => {
         if (word.progress >= 1) return colors.green
@@ -205,9 +202,11 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
                     style={{ width: `${progress * 100}%`, backgroundColor: bg }}
                 />
                 <div className={styles.word}>
-                    <IconButton onClick={() => say(word.native, 'native')}>
-                        <PlayCircleIcon />
-                    </IconButton>
+                    {nativeLang?.key && (
+                        <IconButton onClick={() => sayNative(word.native)}>
+                            <PlayCircleIcon />
+                        </IconButton>
+                    )}
                     <Typography>{word.native}</Typography>
                 </div>
                 <div className={styles.button}>
@@ -218,13 +217,15 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
                 <div className={styles.word}>
                     {showTranslation ? (
                         <>
-                            <IconButton
-                                onClick={() =>
-                                    say(word.translation, 'translation')
-                                }
-                            >
-                                <PlayCircleIcon />
-                            </IconButton>
+                            {translationLang?.key && (
+                                <IconButton
+                                    onClick={() =>
+                                        sayTranslation(word.translation)
+                                    }
+                                >
+                                    <PlayCircleIcon />
+                                </IconButton>
+                            )}
                             <Typography>{word.translation}</Typography>
                         </>
                     ) : (

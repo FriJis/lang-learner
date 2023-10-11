@@ -13,4 +13,9 @@ type translation = string
 type progress = number
 type info = string
 
-export type ExportedWord = [native, translation, progress, info | undefined]
+export type ExportedWord = [
+    native,
+    translation,
+    progress | undefined,
+    info | undefined
+]

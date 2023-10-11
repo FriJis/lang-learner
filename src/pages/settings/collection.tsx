@@ -5,6 +5,8 @@ import {
     CardContent,
     CircularProgress,
     Dialog,
+    DialogActions,
+    DialogContent,
     DialogTitle,
     Grid,
     IconButton,
@@ -32,20 +34,20 @@ import SaveIcon from '@mui/icons-material/Save'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Card, Cards } from '../../components/Card'
+import papaparse from 'papaparse'
+import styles from './collection.module.scss'
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 
 export const CollectionSettings = () => {
     const [err, setErr] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [askImport, setAskImport] = useState<ExportedWord[]>([])
+    const [showAskImport, setShowAskImport] = useState(false)
 
     const collections = useLiveQuery(() => db.collections.toArray())
-    const { collection, statistics, words } = useAppContext()
+    const { collection, statistics, words, nativeLang, translationLang } =
+        useAppContext()
 
-    const nativeLang = useMemo(() => collection?.nativeLang || '', [collection])
-
-    const translationLang = useMemo(
-        () => collection?.translationLang || '',
-        [collection]
-    )
     const voices = useMemo(() => window.speechSynthesis.getVoices(), [])
 
     const setLang = useCallback(
@@ -95,21 +97,26 @@ export const CollectionSettings = () => {
                         if (native.length <= 0) throw new Error()
                         if (translation.length <= 0) throw new Error()
 
+                        const existing = mapWords.get(
+                            `${normalize(native)}-${normalize(translation)}`
+                        )
                         const data = {
                             translation: normalize(translation),
                             native: normalize(native),
-                            progress: +progress,
                             info: info || '',
                         }
-                        const existing = mapWords.get(
-                            `${data.native}-${data.translation}`
-                        )
                         if (!existing)
                             return db.words.add({
                                 ...data,
+                                progress: progress || 0,
                                 collectionId: collection.id || 0,
                             })
-                        return db.words.update(existing, data)
+                        return db.words.update(existing, {
+                            ...data,
+                            progress: _.isUndefined(progress)
+                                ? existing.progress
+                                : progress,
+                        })
                     }
                 )
             }).catch(() => {
@@ -124,10 +131,36 @@ export const CollectionSettings = () => {
             try {
                 const [file] = Array.from(e.target.files || [])
                 if (!file) throw new Error()
+                const json = await readTextFromFile(file)
+                const words = jsonParse<ExportedWord[]>(json)
+                if (!words) throw new Error()
+                if (words.length === 0) return
+                setAskImport(words)
+                setShowAskImport(true)
+            } catch (error) {
+                console.error(error)
+                setErr(true)
+            }
+        },
+        [parse]
+    )
+
+    const importCSV = useCallback(
+        async (e: ChangeEvent<HTMLInputElement>) => {
+            try {
+                const [file] = Array.from(e.target.files || [])
+                if (!file) throw new Error()
                 const result = await readTextFromFile(file)
-                const parsed = jsonParse<ExportedWord[]>(result)
-                if (!parsed) throw new Error()
-                parse(parsed)
+                const csvString = papaparse.parse<string[]>(result, {
+                    header: false,
+                })
+                const words: ExportedWord[] = csvString.data.map((row) => {
+                    const [, , native, translation] = row
+                    return [native, translation, undefined, undefined]
+                })
+                if (words.length === 0) return
+                setAskImport(words)
+                setShowAskImport(true)
             } catch (error) {
                 console.error(error)
                 setErr(true)
@@ -184,14 +217,95 @@ export const CollectionSettings = () => {
         setLoading(false)
     }, [words])
 
+    const confirmAskImport = async () => {
+        await parse(askImport)
+        setShowAskImport(false)
+    }
+
+    const reverseAskImportWord = (index: number) => {
+        setAskImport((old) => {
+            return old.map((data, i) => {
+                if (i !== index) return data
+                const [first, second, ...other] = data
+                return [second, first, ...other]
+            })
+        })
+    }
+
+    const reverseAskImportWords = () => {
+        setAskImport((old) =>
+            old.map(([first, second, ...other]) => [second, first, ...other])
+        )
+    }
+
     return (
         <Cards>
             <Dialog open={err} onClose={() => setErr(false)}>
                 <DialogTitle>Something is wrong</DialogTitle>
             </Dialog>
+            <Dialog
+                open={showAskImport}
+                onClose={() => setShowAskImport(false)}
+            >
+                <DialogTitle>Confirm importing words</DialogTitle>
+                <DialogContent>
+                    <div className={styles.row}>
+                        <div className={styles.fill}>
+                            <Typography>
+                                <b>{nativeLang?.name}</b>
+                            </Typography>
+                        </div>
+                        <div className={styles.button}>
+                            <IconButton onClick={reverseAskImportWords}>
+                                <CompareArrowsIcon />
+                            </IconButton>
+                        </div>
+                        <div className={styles.fill}>
+                            <Typography>
+                                <b>{translationLang?.name}</b>
+                            </Typography>
+                        </div>
+                    </div>
+                    {askImport.map(([native, translation], i) => (
+                        <div className={styles.row} key={i}>
+                            <div className={styles.fill}>
+                                <Typography>{native}</Typography>
+                            </div>
+                            <div className={styles.button}>
+                                <IconButton
+                                    onClick={() => reverseAskImportWord(i)}
+                                >
+                                    <CompareArrowsIcon />
+                                </IconButton>
+                            </div>
+                            <div className={styles.fill}>
+                                <Typography>{translation}</Typography>
+                            </div>
+                        </div>
+                    ))}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowAskImport(false)}>
+                        cancel
+                    </Button>
+                    <Button onClick={confirmAskImport}>confirm</Button>
+                </DialogActions>
+            </Dialog>
             <Backdrop open={loading}>
                 <CircularProgress color="inherit" />
             </Backdrop>
+            <Card>
+                <CardContent>
+                    <Typography variant="h4">Collections</Typography>
+                    {collections?.map((collection) => (
+                        <CollectionSetting
+                            collection={collection}
+                            key={collection.id}
+                        ></CollectionSetting>
+                    ))}
+                    <CollectionSetting></CollectionSetting>
+                </CardContent>
+            </Card>
             <Card>
                 <CardContent>
                     <Half
@@ -199,7 +313,7 @@ export const CollectionSettings = () => {
                             <>
                                 <Typography>Native language</Typography>
                                 <Select
-                                    value={nativeLang}
+                                    value={nativeLang?.key}
                                     onChange={(e) =>
                                         setLang('nativeLang', e.target.value)
                                     }
@@ -220,7 +334,7 @@ export const CollectionSettings = () => {
                             <>
                                 <Typography>Translation language</Typography>
                                 <Select
-                                    value={translationLang}
+                                    value={translationLang?.key}
                                     onChange={(e) =>
                                         setLang(
                                             'translationLang',
@@ -248,30 +362,30 @@ export const CollectionSettings = () => {
                             </Button>
                         }
                         right={
-                            <Button component="label">
-                                Import into current collection
-                                <input
-                                    onChange={importWords}
-                                    hidden
-                                    accept="file/json"
-                                    multiple
-                                    type="file"
-                                />
-                            </Button>
+                            <>
+                                <Button component="label">
+                                    Import into current collection
+                                    <input
+                                        onChange={importWords}
+                                        hidden
+                                        accept=".json"
+                                        multiple
+                                        type="file"
+                                    />
+                                </Button>
+                                <Button component="label">
+                                    Import CSV from google translate
+                                    <input
+                                        onChange={importCSV}
+                                        hidden
+                                        accept=".csv"
+                                        multiple
+                                        type="file"
+                                    />
+                                </Button>
+                            </>
                         }
                     ></Half>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardContent>
-                    <Typography variant="h4">Collections</Typography>
-                    {collections?.map((collection) => (
-                        <CollectionSetting
-                            collection={collection}
-                            key={collection.id}
-                        ></CollectionSetting>
-                    ))}
-                    <CollectionSetting></CollectionSetting>
                 </CardContent>
             </Card>
             <Card>
