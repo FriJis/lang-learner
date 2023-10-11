@@ -1,5 +1,6 @@
-import { Card, CardContent, Typography } from '@mui/material'
+import { CardContent, Typography } from '@mui/material'
 import { FC } from 'react'
+import { Card } from './Card'
 
 export const Nothing: FC<{ msg?: string }> = ({ msg }) => {
     return (

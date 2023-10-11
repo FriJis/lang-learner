@@ -2,14 +2,16 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
-import './assets/fa/css/all.css'
 import './i18n/index'
-// const store = configureStore({counter: counter.reducer})
+import { AppContextProvider } from './ctx/app'
+import './styles/global.scss'
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
 root.render(
     <React.StrictMode>
-        <App />
+        <AppContextProvider>
+            <App />
+        </AppContextProvider>
     </React.StrictMode>
 )
 

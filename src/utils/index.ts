@@ -23,13 +23,9 @@ export async function asyncMap<T, S>(
 }
 
 export function getLangByVoiceURI(voiceURI: string) {
-    const fullLang = window.speechSynthesis
+    return window.speechSynthesis
         .getVoices()
         .find((voice) => voice.voiceURI === voiceURI)?.lang
-    if (!fullLang) return
-    const short = fullLang.split('-')[0]
-    if (!short) return
-    return short
 }
 
 export function findWords(words: Word[], native: string, translation: string) {
@@ -113,9 +109,7 @@ export function convertStatisticsDataToChart(
         return diff >= 0
     })
 
-    const types = Array.from(
-        new Set(filteredStats.map((stat) => stat.type)).values()
-    )
+    const types = Array.from(new Set(Object.values(StatisticsType)).values())
 
     const dates = Array(days)
         .fill('')

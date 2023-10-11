@@ -1,18 +1,17 @@
 import { CardContent } from '@mui/material'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { FC } from 'react'
-import { Card } from '../components/hoc/Card'
 import { StatisticsComponent } from '../components/Statistics'
-import { getStatistics } from '../utils/db'
+import { useAppContext } from '../ctx/app'
+import { Card } from '../components/Card'
 
 export const LearnedWordStatsPage: FC = () => {
-    const statistics = useLiveQuery(() => getStatistics())
+    const { statistics } = useAppContext()
 
     return (
         <Card>
             <CardContent>
                 <StatisticsComponent
-                    statistics={statistics || []}
+                    statistics={statistics}
                 ></StatisticsComponent>
             </CardContent>
         </Card>

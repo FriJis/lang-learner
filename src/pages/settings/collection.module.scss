@@ -1,0 +1,14 @@
+.row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 0;
+}
+.fill {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.button {
+    width: 40px;
+}
