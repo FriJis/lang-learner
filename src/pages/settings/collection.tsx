@@ -50,15 +50,12 @@ export const CollectionSettings = () => {
 
     const voices = useMemo(() => window.speechSynthesis.getVoices(), [])
 
-    const setLang = useCallback(
-        (type: 'nativeLang' | 'translationLang', lang: string) => {
-            if (!collection) return
-            db.collections.update(collection, { [type]: lang })
-        },
-        [collection]
-    )
+    const setLang = (type: 'nativeLang' | 'translationLang', lang: string) => {
+        if (!collection) return
+        db.collections.update(collection, { [type]: lang })
+    }
 
-    const exportWords = useCallback(async () => {
+    const exportWords = async () => {
         if (!collection) return
 
         download(
@@ -76,100 +73,91 @@ export const CollectionSettings = () => {
             `${collection.name}_words.json`,
             'application/json'
         )
-    }, [collection, words])
+    }
 
-    const parse = useCallback(
-        async (exported: ExportedWord[]) => {
-            if (!collection) return
-            const words = await getWords()
+    const parse = async (exported: ExportedWord[]) => {
+        if (!collection) return
+        const words = await getWords()
 
-            const mapWords = new Map(
-                words.map((w) => [
-                    `${normalize(w.native)}-${normalize(w.translation)}`,
-                    w,
-                ])
-            )
+        const mapWords = new Map(
+            words.map((w) => [
+                `${normalize(w.native)}-${normalize(w.translation)}`,
+                w,
+            ])
+        )
 
-            db.transaction('rw', db.words, async () => {
-                await asyncMap(
-                    exported,
-                    ([native, translation, progress, info]) => {
-                        if (native.length <= 0) throw new Error()
-                        if (translation.length <= 0) throw new Error()
+        db.transaction('rw', db.words, async () => {
+            await asyncMap(
+                exported,
+                ([native, translation, progress, info]) => {
+                    if (native.length <= 0) throw new Error()
+                    if (translation.length <= 0) throw new Error()
 
-                        const existing = mapWords.get(
-                            `${normalize(native)}-${normalize(translation)}`
-                        )
-                        const data = {
-                            translation: normalize(translation),
-                            native: normalize(native),
-                            info: info || '',
-                        }
-                        if (!existing)
-                            return db.words.add({
-                                ...data,
-                                progress: progress || 0,
-                                collectionId: collection.id || 0,
-                            })
-                        return db.words.update(existing, {
-                            ...data,
-                            progress: _.isUndefined(progress)
-                                ? existing.progress
-                                : progress,
-                        })
+                    const existing = mapWords.get(
+                        `${normalize(native)}-${normalize(translation)}`
+                    )
+                    const data = {
+                        translation: normalize(translation),
+                        native: normalize(native),
+                        info: info || '',
                     }
-                )
-            }).catch(() => {
-                throw new Error()
+                    if (!existing)
+                        return db.words.add({
+                            ...data,
+                            progress: progress || 0,
+                            collectionId: collection.id || 0,
+                        })
+                    return db.words.update(existing, {
+                        ...data,
+                        progress: _.isUndefined(progress)
+                            ? existing.progress
+                            : progress,
+                    })
+                }
+            )
+        }).catch(() => {
+            throw new Error()
+        })
+    }
+
+    const importWords = async (e: ChangeEvent<HTMLInputElement>) => {
+        try {
+            const [file] = Array.from(e.target.files || [])
+            if (!file) throw new Error()
+            const json = await readTextFromFile(file)
+            const words = jsonParse<ExportedWord[]>(json)
+            if (!words) throw new Error()
+            if (words.length === 0) return
+            setAskImport(words)
+            setShowAskImport(true)
+        } catch (error) {
+            console.error(error)
+            setErr(true)
+        }
+    }
+
+    const importCSV = async (e: ChangeEvent<HTMLInputElement>) => {
+        try {
+            const [file] = Array.from(e.target.files || [])
+            if (!file) throw new Error()
+            const result = await readTextFromFile(file)
+            const csvString = papaparse.parse<string[]>(result, {
+                header: false,
             })
-        },
-        [collection]
-    )
+            const words: ExportedWord[] = csvString.data.map((row) => {
+                const [, , native, translation] = row
+                return [native, translation, undefined, undefined]
+            })
+            if (words.length === 0) return
+            setAskImport(words)
+            setShowAskImport(true)
+        } catch (error) {
+            console.error(error)
+            setErr(true)
+        }
+    }
 
-    const importWords = useCallback(
-        async (e: ChangeEvent<HTMLInputElement>) => {
-            try {
-                const [file] = Array.from(e.target.files || [])
-                if (!file) throw new Error()
-                const json = await readTextFromFile(file)
-                const words = jsonParse<ExportedWord[]>(json)
-                if (!words) throw new Error()
-                if (words.length === 0) return
-                setAskImport(words)
-                setShowAskImport(true)
-            } catch (error) {
-                console.error(error)
-                setErr(true)
-            }
-        },
-        [parse]
-    )
-
-    const importCSV = useCallback(
-        async (e: ChangeEvent<HTMLInputElement>) => {
-            try {
-                const [file] = Array.from(e.target.files || [])
-                if (!file) throw new Error()
-                const result = await readTextFromFile(file)
-                const csvString = papaparse.parse<string[]>(result, {
-                    header: false,
-                })
-                const words: ExportedWord[] = csvString.data.map((row) => {
-                    const [, , native, translation] = row
-                    return [native, translation, undefined, undefined]
-                })
-                if (words.length === 0) return
-                setAskImport(words)
-                setShowAskImport(true)
-            } catch (error) {
-                console.error(error)
-                setErr(true)
-            }
-        },
-        [parse]
-    )
-
-    const deleteWords = useCallback(async () => {
+    const deleteWords = async () => {
         const confirmation = window.confirm('are you sure?')
         if (!confirmation) return
         setLoading(true)
@@ -184,9 +172,9 @@ export const CollectionSettings = () => {
             console.error(error)
         }
         setLoading(false)
-    }, [words])
+    }
 
-    const deleteStatistics = useCallback(async () => {
+    const deleteStatistics = async () => {
         const confirmation = window.confirm('are you sure?')
         if (!confirmation) return
         setLoading(true)
@@ -201,9 +189,9 @@ export const CollectionSettings = () => {
             console.error(error)
         }
         setLoading(false)
-    }, [statistics])
+    }
 
-    const resetProgress = useCallback(async () => {
+    const resetProgress = async () => {
         const confirmation = window.confirm('are you sure?')
         if (!confirmation) return
         setLoading(true)
@@ -215,7 +203,7 @@ export const CollectionSettings = () => {
             console.error(error)
         }
         setLoading(false)
-    }, [words])
+    }
 
     const confirmAskImport = async () => {
         await parse(askImport)
