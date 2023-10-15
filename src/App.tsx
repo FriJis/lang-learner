@@ -1,19 +1,16 @@
 import {
     Button,
     CardContent,
-    FormControl,
     IconButton,
-    InputLabel,
     MenuItem,
     TextField,
     Tooltip,
-    Typography,
 } from '@mui/material'
 import { LearnPage } from './pages/learn'
 import { ListPage } from './pages/list'
 import { useAppContext } from './ctx/app'
 import styles from './App.module.scss'
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { db } from './utils/db'
 import { Container } from './components/Container'
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
