@@ -6,20 +6,15 @@ import {
     ButtonGroup,
     CardActions,
     CardContent,
-    CardHeader,
     Checkbox,
-    Dialog,
-    DialogContent,
     FormControlLabel,
-    FormLabel,
     Snackbar,
-    SnackbarContent,
     TextField,
     Typography,
 } from '@mui/material'
 import { useLS } from '../../hooks/useLS'
 import { lsConf } from '../../conf'
-import { getRandomValueFromArray, say, sayNative } from '../../utils'
+import { getRandomValueFromArray, say } from '../../utils'
 import { useLangs } from '../../hooks/useLangs'
 import { useAppContext } from '../../ctx/app'
 import styles from './numbers.module.scss'
@@ -54,7 +49,7 @@ export const NumbersLearnComponent = () => {
         setGeneratedNumber(number)
         setWriteStyleValue(undefined)
         say(number.toString(), translationLang?.voiceURI)
-    }, [min, max, floating, translationLang?.voiceURI])
+    }, [min, max, floating, translationLang?.voiceURI, numbersCount])
 
     const didMistake = () => {
         setMistake(generatedNumber)
@@ -98,7 +93,7 @@ export const NumbersLearnComponent = () => {
             <Snackbar
                 open={showMistake}
                 onClose={() => setShowMistake(false)}
-                message={generatedNumber}
+                message={mistake}
                 autoHideDuration={2000}
             />
             <Cards>
