@@ -44,7 +44,7 @@ export const GenerateChatGPTComponent = () => {
             nativeLang?.voiceURI
                 ? ` in ${nativeLang.name} (${nativeLang.key}) language`
                 : '',
-            topic.length > 0 ? ` about ${topic}` : '',
+            ` about ${topic.length > 0 ? topic : 'any topic'}`,
             finalWords.length > 0
                 ? ` that includes the words: ${finalWords
                       .map((w) => (reversed ? w.translation : w.native))
