@@ -56,7 +56,8 @@
     "electron:dev": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && tsc -p electron -w\" \"wait-on http://localhost:3000 && tsc -p electron && electron .\"",
     "electron:build": "yarn build && tsc -p electron && electron-builder",
     "eject": "react-scripts eject",
-    "format": "prettier --write ./src/*"
+    "format": "prettier --write ./src/*",
+    "prepare": "husky install"
   },
   "build": {
     "extends": null,
@@ -92,6 +93,7 @@
     "cross-env": "^7.0.3",
     "electron": "^19.0.3",
     "electron-builder": "^23.0.3",
+    "husky": "^8.0.3",
     "wait-on": "^6.0.1"
   }
 }
