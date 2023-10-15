@@ -11,7 +11,6 @@ import {
     Grid,
     IconButton,
     MenuItem,
-    Select,
     TextField,
     Typography,
 } from '@mui/material'
@@ -37,6 +36,7 @@ import { Card, Cards } from '../../components/Card'
 import papaparse from 'papaparse'
 import styles from './collection.module.scss'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
+import { Select } from '../../components/Select'
 
 export const CollectionSettings = () => {
     const [err, setErr] = useState(false)
@@ -302,49 +302,42 @@ export const CollectionSettings = () => {
                 <CardContent>
                     <Half
                         left={
-                            <>
-                                <Typography>Native language</Typography>
-                                <Select
-                                    value={nativeLang?.voiceURI}
-                                    onChange={(e) =>
-                                        setLang('nativeLang', e.target.value)
-                                    }
-                                    fullWidth
-                                >
-                                    {voices.map((voice, i) => (
-                                        <MenuItem
-                                            value={voice.voiceURI}
-                                            key={i}
-                                        >
-                                            {voice.name} ({voice.lang})
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </>
+                            <Select
+                                label="Native language"
+                                value={nativeLang?.voiceURI}
+                                onChange={(e) =>
+                                    setLang(
+                                        'nativeLang',
+                                        e.target.value as string
+                                    )
+                                }
+                                fullWidth
+                            >
+                                {voices.map((voice, i) => (
+                                    <MenuItem value={voice.voiceURI} key={i}>
+                                        {voice.name} ({voice.lang})
+                                    </MenuItem>
+                                ))}
+                            </Select>
                         }
                         right={
-                            <>
-                                <Typography>Translation language</Typography>
-                                <Select
-                                    value={translationLang?.voiceURI}
-                                    onChange={(e) =>
-                                        setLang(
-                                            'translationLang',
-                                            e.target.value
-                                        )
-                                    }
-                                    fullWidth
-                                >
-                                    {voices.map((voice, i) => (
-                                        <MenuItem
-                                            value={voice.voiceURI}
-                                            key={i}
-                                        >
-                                            {voice.name} ({voice.lang})
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </>
+                            <Select
+                                label="Translation language"
+                                value={translationLang?.voiceURI}
+                                onChange={(e) =>
+                                    setLang(
+                                        'translationLang',
+                                        e.target.value as string
+                                    )
+                                }
+                                fullWidth
+                            >
+                                {voices.map((voice, i) => (
+                                    <MenuItem value={voice.voiceURI} key={i}>
+                                        {voice.name} ({voice.lang})
+                                    </MenuItem>
+                                ))}
+                            </Select>
                         }
                     ></Half>
                     <Half
