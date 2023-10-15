@@ -2,6 +2,7 @@ import { PageManager } from '../../components/PageManager'
 import { ControlWorkComponent } from './controlWork'
 import { LearnComponent } from './learn'
 import { ListenComponent } from './listen'
+import { NumbersLearnComponent } from './numbers'
 import { WriteComponent } from './write'
 
 export const LearnPage = () => {
@@ -22,6 +23,11 @@ export const LearnPage = () => {
                     label: 'Listening',
                     value: 'listening',
                     component: <ListenComponent />,
+                },
+                {
+                    label: 'Numbers',
+                    value: 'numbers',
+                    component: <NumbersLearnComponent />,
                 },
                 {
                     label: 'Final test',

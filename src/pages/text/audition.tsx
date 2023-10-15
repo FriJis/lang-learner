@@ -58,7 +58,7 @@ export const AuditionComponent = () => {
 
     const speak = useCallback(() => {
         window.speechSynthesis.cancel()
-        say(currentPreparedText, nativeLang?.key)
+        say(currentPreparedText, nativeLang?.voiceURI)
     }, [currentPreparedText, nativeLang])
 
     const save = useCallback(() => {
@@ -69,9 +69,9 @@ export const AuditionComponent = () => {
     const next = useCallback(() => {
         setCurrentIndex((o) => o + 1)
         window.speechSynthesis.cancel()
-        say(nextPreparedText, nativeLang?.key)
+        say(nextPreparedText, nativeLang?.voiceURI)
         save()
-    }, [nextPreparedText, nativeLang?.key, save])
+    }, [nextPreparedText, nativeLang?.voiceURI, save])
 
     const finish = useCallback(async () => {
         window.speechSynthesis.cancel()

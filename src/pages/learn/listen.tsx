@@ -9,6 +9,8 @@ import { composeWords } from '../../utils/db'
 import { Card } from '../../components/Card'
 
 export const ListenComponent = () => {
+    const [ready, setReady] = useState(false)
+
     const [playing, setPlaying] = useState(false)
     const [current, setCurrent] = useState<Word | null>(null)
     const [prev, setPrev] = useState<Word | null>(null)
@@ -25,7 +27,7 @@ export const ListenComponent = () => {
     }, [learnFirst, prev])
 
     useEffect(() => {
-        generate()
+        generate().then(() => setReady(true))
     }, [generate])
 
     useEffect(() => {
@@ -39,6 +41,8 @@ export const ListenComponent = () => {
         }, 100)
         return () => clearInterval(id)
     }, [playing, current])
+
+    if (!ready) return null
 
     if (!current) return <Nothing />
 

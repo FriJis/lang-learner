@@ -1,0 +1,11 @@
+.variants {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.settings {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}

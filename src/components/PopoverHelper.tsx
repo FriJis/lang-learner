@@ -18,12 +18,7 @@ import {
     useRef,
     useState,
 } from 'react'
-import {
-    findWords,
-    getLangByVoiceURI,
-    sayNative,
-    sayTranslation,
-} from '../utils'
+import { findWords, sayNative, sayTranslation } from '../utils'
 import { WordEditor } from './WordEditor'
 import { useLangs } from '../hooks/useLangs'
 import { useLS } from '../hooks/useLS'
@@ -66,19 +61,13 @@ export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
 
     const [translator] = useLS(lsConf.translator)
 
-    const showTranslation = useCallback(() => {
+    const showTranslation = () => {
         const text = popoverMeta?.text
         if (!text) return
 
         const link = translator
-            .replaceAll(
-                '{{translationLang}}',
-                getLangByVoiceURI(translationLang?.key || '') || ''
-            )
-            .replaceAll(
-                '{{nativeLang}}',
-                getLangByVoiceURI(nativeLang?.key || '') || ''
-            )
+            .replaceAll('{{nativeLang}}', nativeLang?.key || '')
+            .replaceAll('{{translationLang}}', translationLang?.key || '')
             .replaceAll('{{text}}', text.trim())
         window.open(link, 'translator')
         setShowEditor(true)
@@ -86,7 +75,7 @@ export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
         setTranslationWord('')
         if (reverse) return setTranslationWord(text)
         setNativeWord(text)
-    }, [nativeLang, translationLang, translator, reverse, popoverMeta?.text])
+    }
 
     useEffect(() => {
         const current = textRef?.current
@@ -169,7 +158,7 @@ export const PopoverHelper: FC<PropsWithChildren<{ reverse?: boolean }>> = ({
                     >
                         listen
                     </Button>
-                    <Button size="small" onClick={() => showTranslation()}>
+                    <Button size="small" onClick={showTranslation}>
                         show translation
                     </Button>
                 </CardActions>

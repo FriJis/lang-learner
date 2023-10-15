@@ -9,7 +9,7 @@ import { LearnPage } from './pages/learn'
 import { ListPage } from './pages/list'
 import { useAppContext } from './ctx/app'
 import styles from './App.module.scss'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { db } from './utils/db'
 import { Container } from './components/Container'
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
@@ -67,10 +67,6 @@ function App() {
         db.collections.add({ name: newCollection, active: true })
     }
 
-    useEffect(() => {
-        window.speechSynthesis.getVoices()
-    }, [])
-
     if (!collection)
         return (
             <Container>
@@ -94,7 +90,12 @@ function App() {
             menu={
                 <>
                     {mainPages.map((page) => (
-                        <Tooltip title={page.name} placement="right" arrow>
+                        <Tooltip
+                            key={page.name}
+                            title={page.name}
+                            placement="right"
+                            arrow
+                        >
                             <IconButton
                                 key={page.name}
                                 onClick={() => setPage(page.component)}

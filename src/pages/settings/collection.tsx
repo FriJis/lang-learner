@@ -17,7 +17,7 @@ import {
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
-import { ChangeEvent, FC, useCallback, useMemo, useState } from 'react'
+import { ChangeEvent, FC, useCallback, useState } from 'react'
 import { Collection } from '../../types/collection'
 import { ExportedWord } from '../../types/word'
 import {
@@ -45,10 +45,14 @@ export const CollectionSettings = () => {
     const [showAskImport, setShowAskImport] = useState(false)
 
     const collections = useLiveQuery(() => db.collections.toArray())
-    const { collection, statistics, words, nativeLang, translationLang } =
-        useAppContext()
-
-    const voices = useMemo(() => window.speechSynthesis.getVoices(), [])
+    const {
+        collection,
+        statistics,
+        words,
+        nativeLang,
+        translationLang,
+        voices,
+    } = useAppContext()
 
     const setLang = (type: 'nativeLang' | 'translationLang', lang: string) => {
         if (!collection) return
@@ -301,7 +305,7 @@ export const CollectionSettings = () => {
                             <>
                                 <Typography>Native language</Typography>
                                 <Select
-                                    value={nativeLang?.key}
+                                    value={nativeLang?.voiceURI}
                                     onChange={(e) =>
                                         setLang('nativeLang', e.target.value)
                                     }
@@ -322,7 +326,7 @@ export const CollectionSettings = () => {
                             <>
                                 <Typography>Translation language</Typography>
                                 <Select
-                                    value={translationLang?.key}
+                                    value={translationLang?.voiceURI}
                                     onChange={(e) =>
                                         setLang(
                                             'translationLang',

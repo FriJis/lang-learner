@@ -23,6 +23,8 @@ import { composeWords } from '../../utils/db'
 import { Card, Cards } from '../../components/Card'
 
 export const LearnComponent = () => {
+    const [ready, setReady] = useState(false)
+
     const [word, setWord] = useState<Word | null>(null)
     const [prev, setPrev] = useState<Word | null>(null)
     const [showPrev, setShowPrev] = useState(false)
@@ -82,8 +84,10 @@ export const LearnComponent = () => {
     )
 
     useEffect(() => {
-        generate()
+        generate().then(() => setReady(true))
     }, [generate])
+
+    if (!ready) return null
 
     if (translations.length <= 0) return <Nothing />
 

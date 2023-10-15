@@ -7,7 +7,9 @@ export const Nothing: FC<{ msg?: string }> = ({ msg }) => {
         <Card>
             <CardContent>
                 <Typography align="center">
-                    {!!msg ? msg : 'Nothing to learn'}
+                    {!!msg
+                        ? msg
+                        : "Nothing to learn. At the time, You don't have words in learning process"}
                 </Typography>
             </CardContent>
         </Card>

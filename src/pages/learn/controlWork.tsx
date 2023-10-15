@@ -20,6 +20,8 @@ import { useAppContext } from '../../ctx/app'
 import { Card, Cards } from '../../components/Card'
 
 export const ControlWorkComponent = () => {
+    const [ready, setReady] = useState(false)
+
     const [checkedWords, setCheckedWords] = useState<number[]>([])
     const [word, setWord] = useState<Word | null>(null)
     const [sessionWords, setSessionWords] = useState<Word[]>([])
@@ -50,11 +52,13 @@ export const ControlWorkComponent = () => {
     }, [countWords, checkedWords, sessionWords])
 
     const compare = useCallback(
-        async (translation?: string) => {
+        (translation?: string) => {
             const id = word?.id
             if (!id) return
 
-            await db.transaction(
+            setShowTranslations(false)
+
+            db.transaction(
                 'rw',
                 db.words,
                 db.collections,
@@ -80,14 +84,12 @@ export const ControlWorkComponent = () => {
                     setCheckedWords((o) => [...o, id])
                 }
             )
-
-            setShowTranslations(false)
         },
         [word, collection]
     )
 
     useEffect(() => {
-        generate()
+        generate().then(() => setReady(true))
     }, [generate])
 
     useEffect(() => {
@@ -108,6 +110,8 @@ export const ControlWorkComponent = () => {
         }
         f()
     }, [controlWorkTimer])
+
+    if (!ready) return null
 
     if (!word) return <Nothing />
 
@@ -150,12 +154,14 @@ export const ControlWorkComponent = () => {
                     <Button color="error" onClick={() => compare()}>
                         I don't know
                     </Button>
-                    <Button
-                        color="success"
-                        onClick={() => setShowTranslations(true)}
-                    >
-                        I know
-                    </Button>
+                    {!showTranslations && (
+                        <Button
+                            color="success"
+                            onClick={() => setShowTranslations(true)}
+                        >
+                            I know
+                        </Button>
+                    )}
                 </CardActions>
             </Card>
         </Cards>
