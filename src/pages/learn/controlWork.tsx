@@ -1,23 +1,16 @@
-import {
-    Button,
-    CardActions,
-    CardContent,
-    Grid,
-    Typography,
-} from '@mui/material'
+import { Typography } from '@mui/material'
 import _ from 'lodash'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
-import { Info } from '../../components/Info'
 import { Nothing } from '../../components/Nothing'
 import { lsConf } from '../../conf'
 import { useLS } from '../../hooks/useLS'
 import { StatisticsType } from '../../types/statistics'
 import { Word } from '../../types/word'
-import { getRandomValueFromArray, sayNative, sayTranslation } from '../../utils'
+import { getRandomValueFromArray } from '../../utils'
 import { db, getWords } from '../../utils/db'
 import { useAppContext } from '../../ctx/app'
-import { Card, Cards } from '../../components/Card'
+import { Quiz } from '../../components/Quiz'
 
 export const ControlWorkComponent = () => {
     const [ready, setReady] = useState(false)
@@ -26,8 +19,7 @@ export const ControlWorkComponent = () => {
     const [word, setWord] = useState<Word | null>(null)
     const [sessionWords, setSessionWords] = useState<Word[]>([])
 
-    const [showTranslations, setShowTranslations] = useState(false)
-    const [translations, setTranslations] = useState<string[]>([])
+    const [translations, setTranslations] = useState<Word[]>([])
 
     const [countWords] = useLS(lsConf.count_words)
     const [controlWorkTimer] = useLS(lsConf.control_work_timer)
@@ -48,45 +40,36 @@ export const ControlWorkComponent = () => {
         if (!randomWord) return setWord(null)
         setWord(randomWord)
 
-        setTranslations(_.shuffle(preparedWords.map((w) => w.translation)))
+        setTranslations(_.shuffle(preparedWords))
     }, [countWords, checkedWords, sessionWords])
 
-    const compare = useCallback(
-        (translation?: string) => {
-            const id = word?.id
-            if (!id) return
+    const fail = () => {
+        const id = word?.id
+        if (!id) return
+        db.words.update(word, {
+            progress: 0,
+            lastControllWork: moment().toISOString(),
+        })
+        setCheckedWords((o) => [...o, id])
+    }
 
-            setShowTranslations(false)
+    const success = () => {
+        const id = word?.id
+        if (!id) return
+        db.words.update(word, {
+            lastControllWork: moment().toISOString(),
+        })
+        const collectionId = collection?.id
+        if (!collectionId) throw new Error('collection is undefined')
 
-            db.transaction(
-                'rw',
-                db.words,
-                db.collections,
-                db.statistics,
-                async () => {
-                    if (word.translation !== translation) {
-                        await db.words.update(word, { progress: 0 })
-                    } else {
-                        const collectionId = collection?.id
-                        if (!collectionId)
-                            throw new Error('collection is undefined')
-
-                        await db.statistics.add({
-                            type: StatisticsType.passedFinalTest,
-                            metaValue: `${word.native} - ${word.translation}`,
-                            createdAt: moment.utc().toISOString(),
-                            collectionId,
-                        })
-                    }
-                    await db.words.update(word, {
-                        lastControllWork: moment().toISOString(),
-                    })
-                    setCheckedWords((o) => [...o, id])
-                }
-            )
-        },
-        [word, collection]
-    )
+        db.statistics.add({
+            type: StatisticsType.passedFinalTest,
+            metaValue: `${word.native} - ${word.translation}`,
+            createdAt: moment.utc().toISOString(),
+            collectionId,
+        })
+        setCheckedWords((o) => [...o, id])
+    }
 
     useEffect(() => {
         generate().then(() => setReady(true))
@@ -116,54 +99,16 @@ export const ControlWorkComponent = () => {
     if (!word) return <Nothing />
 
     return (
-        <Cards>
-            <Card>
-                <CardContent>
-                    <Typography align="center">
-                        {`${checkedWords.length} / ${sessionWords.length}`}
-                    </Typography>
-                    <Typography
-                        align="center"
-                        onMouseEnter={() => sayNative(word?.native || '')}
-                        onMouseLeave={() => window.speechSynthesis.cancel()}
-                    >
-                        {word?.native || ''} <Info word={word}></Info>
-                    </Typography>
-                </CardContent>
-                {showTranslations && (
-                    <CardActions>
-                        <Grid container justifyContent="center">
-                            {translations.map((t) => (
-                                <Grid item key={t}>
-                                    <Button
-                                        color="success"
-                                        onClick={() => compare(t)}
-                                        onMouseEnter={() => sayTranslation(t)}
-                                        onMouseLeave={() =>
-                                            window.speechSynthesis.cancel()
-                                        }
-                                    >
-                                        {t}
-                                    </Button>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </CardActions>
-                )}
-                <CardActions>
-                    <Button color="error" onClick={() => compare()}>
-                        I don't know
-                    </Button>
-                    {!showTranslations && (
-                        <Button
-                            color="success"
-                            onClick={() => setShowTranslations(true)}
-                        >
-                            I know
-                        </Button>
-                    )}
-                </CardActions>
-            </Card>
-        </Cards>
+        <Quiz
+            currentWord={word}
+            answerOptions={translations}
+            onFail={fail}
+            beforeWord={
+                <Typography align="center">
+                    {`${checkedWords.length} / ${sessionWords.length}`}
+                </Typography>
+            }
+            onSuccess={success}
+        />
     )
 }

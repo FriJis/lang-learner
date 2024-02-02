@@ -17,14 +17,15 @@ export const GeneralSettings = () => {
             <Card>
                 <CardContent>
                     <Typography variant="h5">
-                        Success offset: {successOffset}
+                        Success coefficient: {successOffset}
                     </Typography>
                     <Typography>
-                        Feature progress = current progress (0.5) +{' '}
-                        {successOffset} ={' '}
-                        {0.5 + successOffset > 1
-                            ? 1
-                            : _.round(0.5 + successOffset, 2)}
+                        The coefficient that is responsible for successful
+                        completion of the task. If the progress of a word was 50
+                        percent and you set 0.2, then if you successfully
+                        complete the task, the final progress will be 70 percent
+                        (0.5 + 0.2 = 0.7). The higher you set the value, the
+                        faster the word becomes learned
                     </Typography>
                     <Slider
                         min={0}
@@ -37,11 +38,16 @@ export const GeneralSettings = () => {
                     ></Slider>
 
                     <Typography variant="h5">
-                        Mistake offset: {mistakeOffset}
+                        Mistake coefficient: {mistakeOffset}
                     </Typography>
                     <Typography>
-                        Feature progress = current progress (0.5) *{' '}
-                        {mistakeOffset} = {_.round(0.5 * mistakeOffset, 2)}
+                        The coefficient that is responsible for failing a task.
+                        If the word progress was 50 percent and you put 0.5, the
+                        final progress will be 25 percent (0.5 * 0.5 = 0.25) if
+                        the answer is wrong. The higher you set the value, the
+                        more leniently the error will be factored into the
+                        current progress. If you set it to 0, even the slightest
+                        error will set the word progress to 0 percent
                     </Typography>
 
                     <Slider
@@ -57,8 +63,8 @@ export const GeneralSettings = () => {
             </Card>
             <Card>
                 <CardContent>
-                    <Typography>
-                        {`variants words count in quiz: ${countWords}`}
+                    <Typography variant="h5">
+                        Number of answer choices in the quiz: {countWords}
                     </Typography>
 
                     <Slider
@@ -69,7 +75,7 @@ export const GeneralSettings = () => {
                             setCountWords(_.isArray(v) ? v[0] : v)
                         }
                     ></Slider>
-                    <Typography>
+                    <Typography variant="h5">
                         {learnFirst > 0
                             ? `Learn first of ${learnFirst} words`
                             : 'Has no limit'}
@@ -83,7 +89,9 @@ export const GeneralSettings = () => {
                         }
                     ></Slider>
 
-                    <Typography>Synthesis speed {speakRate}</Typography>
+                    <Typography variant="h5">
+                        Synthesis speed {speakRate}
+                    </Typography>
                     <Slider
                         min={0.5}
                         max={2}
@@ -93,7 +101,9 @@ export const GeneralSettings = () => {
                             setSpeakRate(_.isArray(v) ? v[0] : v)
                         }
                     ></Slider>
-                    <Typography>Link for translation helper</Typography>
+                    <Typography variant="h5">
+                        Link for translation helper
+                    </Typography>
                     <Typography>
                         {'{{nativeLang}}, {{translationLang}}, {{text}}'}
                     </Typography>
