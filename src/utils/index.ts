@@ -22,12 +22,6 @@ export async function asyncMap<T, S>(
     return results
 }
 
-export function getLangByVoiceURI(voiceURI: string) {
-    return window.speechSynthesis
-        .getVoices()
-        .find((voice) => voice.voiceURI === voiceURI)?.lang
-}
-
 export function findWords(words: Word[], native: string, translation: string) {
     return words.filter(
         (w) =>

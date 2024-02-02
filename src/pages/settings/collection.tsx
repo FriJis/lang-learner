@@ -11,13 +11,12 @@ import {
     Grid,
     IconButton,
     MenuItem,
-    Select,
     TextField,
     Typography,
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
-import { ChangeEvent, FC, useCallback, useMemo, useState } from 'react'
+import { ChangeEvent, FC, useCallback, useState } from 'react'
 import { Collection } from '../../types/collection'
 import { ExportedWord } from '../../types/word'
 import {
@@ -37,6 +36,7 @@ import { Card, Cards } from '../../components/Card'
 import papaparse from 'papaparse'
 import styles from './collection.module.scss'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
+import { Select } from '../../components/Select'
 
 export const CollectionSettings = () => {
     const [err, setErr] = useState(false)
@@ -45,10 +45,14 @@ export const CollectionSettings = () => {
     const [showAskImport, setShowAskImport] = useState(false)
 
     const collections = useLiveQuery(() => db.collections.toArray())
-    const { collection, statistics, words, nativeLang, translationLang } =
-        useAppContext()
-
-    const voices = useMemo(() => window.speechSynthesis.getVoices(), [])
+    const {
+        collection,
+        statistics,
+        words,
+        nativeLang,
+        translationLang,
+        voices,
+    } = useAppContext()
 
     const setLang = (type: 'nativeLang' | 'translationLang', lang: string) => {
         if (!collection) return
@@ -298,49 +302,42 @@ export const CollectionSettings = () => {
                 <CardContent>
                     <Half
                         left={
-                            <>
-                                <Typography>Native language</Typography>
-                                <Select
-                                    value={nativeLang?.key}
-                                    onChange={(e) =>
-                                        setLang('nativeLang', e.target.value)
-                                    }
-                                    fullWidth
-                                >
-                                    {voices.map((voice, i) => (
-                                        <MenuItem
-                                            value={voice.voiceURI}
-                                            key={i}
-                                        >
-                                            {voice.name} ({voice.lang})
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </>
+                            <Select
+                                label="Native language"
+                                value={nativeLang?.voiceURI}
+                                onChange={(e) =>
+                                    setLang(
+                                        'nativeLang',
+                                        e.target.value as string
+                                    )
+                                }
+                                fullWidth
+                            >
+                                {voices.map((voice, i) => (
+                                    <MenuItem value={voice.voiceURI} key={i}>
+                                        {voice.name} ({voice.lang})
+                                    </MenuItem>
+                                ))}
+                            </Select>
                         }
                         right={
-                            <>
-                                <Typography>Translation language</Typography>
-                                <Select
-                                    value={translationLang?.key}
-                                    onChange={(e) =>
-                                        setLang(
-                                            'translationLang',
-                                            e.target.value
-                                        )
-                                    }
-                                    fullWidth
-                                >
-                                    {voices.map((voice, i) => (
-                                        <MenuItem
-                                            value={voice.voiceURI}
-                                            key={i}
-                                        >
-                                            {voice.name} ({voice.lang})
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </>
+                            <Select
+                                label="Translation language"
+                                value={translationLang?.voiceURI}
+                                onChange={(e) =>
+                                    setLang(
+                                        'translationLang',
+                                        e.target.value as string
+                                    )
+                                }
+                                fullWidth
+                            >
+                                {voices.map((voice, i) => (
+                                    <MenuItem value={voice.voiceURI} key={i}>
+                                        {voice.name} ({voice.lang})
+                                    </MenuItem>
+                                ))}
+                            </Select>
                         }
                     ></Half>
                     <Half

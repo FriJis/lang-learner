@@ -20,9 +20,13 @@ export const GenerateChatGPTComponent = () => {
     const [notLearned, setNotLearned] = useState(false)
     const [reversed, setReversed] = useState(false)
     const [topic, setTopic] = useState('')
-    const [count, setCount] = useState(50)
+    const [count, setCount] = useState(0)
 
-    const { words } = useAppContext()
+    const {
+        words,
+        nativeLang: baseNativeLang,
+        translationLang: baseTranslationLang,
+    } = useAppContext()
 
     const { nativeLang } = useLangs(reversed)
 
@@ -37,8 +41,10 @@ export const GenerateChatGPTComponent = () => {
 
         return [
             'Generate a text without translation',
-            nativeLang?.key ? ` in ${nativeLang.name}` : '',
-            topic.length > 0 ? ` about ${topic}` : '',
+            nativeLang?.voiceURI
+                ? ` in ${nativeLang.name} (${nativeLang.key}) language`
+                : '',
+            ` about ${topic.length > 0 ? topic : 'any topic'}`,
             finalWords.length > 0
                 ? ` that includes the words: ${finalWords
                       .map((w) => (reversed ? w.translation : w.native))
@@ -96,16 +102,16 @@ export const GenerateChatGPTComponent = () => {
                 <Grid container>
                     <ButtonGroup>
                         <Button
-                            variant={reversed ? 'contained' : 'outlined'}
-                            onClick={() => setReversed(true)}
-                        >
-                            Native
-                        </Button>
-                        <Button
                             variant={reversed ? 'outlined' : 'contained'}
                             onClick={() => setReversed(false)}
                         >
-                            Translation
+                            {baseNativeLang?.name}
+                        </Button>
+                        <Button
+                            variant={reversed ? 'contained' : 'outlined'}
+                            onClick={() => setReversed(true)}
+                        >
+                            {baseTranslationLang?.name}
                         </Button>
                     </ButtonGroup>
                 </Grid>

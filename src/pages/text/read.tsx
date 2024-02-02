@@ -54,7 +54,7 @@ export const ReadComponent = () => {
     const listen = useCallback(() => {
         if (window.speechSynthesis.speaking)
             return window.speechSynthesis.cancel()
-        say(text, nativeLang?.key)
+        say(text, nativeLang?.voiceURI)
     }, [text, nativeLang])
 
     const pause = useCallback(() => {

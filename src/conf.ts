@@ -11,14 +11,6 @@ export const lsConf = {
         name: 'mistake_offset',
         def: 0.5,
     },
-    // nativeLang: {
-    //     name: 'native_lang',
-    //     def: 'en-EN',
-    // },
-    // translationLang: {
-    //     name: 'translation_lang',
-    //     def: 'en-EN',
-    // },
     learn_first: {
         name: 'learn_first',
         def: 15,
@@ -39,6 +31,14 @@ export const lsConf = {
         name: 'stats_days',
         def: 30,
     },
+    numbersGeneratorMin: {
+        name: 'numbers_generator_min',
+        def: 0,
+    },
+    numbersGeneratorMax: {
+        name: 'numbers_generator_max',
+        def: 100,
+    },
 }
 
 export const colors = {
@@ -48,7 +48,7 @@ export const colors = {
     yellow: '#d1d19b',
 }
 
-export const languagesConfig = new Map([
+export const languagesConfig = [
     ['ar-SA', 'Arabic'],
     ['bn-BD', 'Bangla'],
     ['bn-IN', 'Bangla'],
@@ -102,4 +102,4 @@ export const languagesConfig = new Map([
     ['zh-CN', 'Chinese'],
     ['zh-HK', 'Chinese'],
     ['zh-TW', 'Chinese'],
-])
+]

@@ -21,6 +21,8 @@ import { Info } from '../../components/Info'
 import { Card } from '../../components/Card'
 
 export const WriteComponent = () => {
+    const [ready, setReady] = useState(false)
+
     const [word, setWord] = useState<Word | null>(null)
     const [result, setResult] = useState('')
     const [helper, setHelper] = useState('')
@@ -106,8 +108,10 @@ export const WriteComponent = () => {
     )
 
     useEffect(() => {
-        generate()
+        generate().then(() => setReady(true))
     }, [generate])
+
+    if (!ready) return null
 
     if (!word) return <Nothing></Nothing>
 
@@ -120,7 +124,7 @@ export const WriteComponent = () => {
                     !!prev?.info ? `(${prev.info})` : ''
                 }`}
                 autoHideDuration={5000}
-            ></Snackbar>
+            />
             <Form onSubmit={compare}>
                 <Card>
                     <CardContent>

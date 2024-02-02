@@ -2,6 +2,7 @@ import {
     Button,
     CardContent,
     IconButton,
+    MenuItem,
     TextField,
     Tooltip,
 } from '@mui/material'
@@ -9,7 +10,7 @@ import { LearnPage } from './pages/learn'
 import { ListPage } from './pages/list'
 import { useAppContext } from './ctx/app'
 import styles from './App.module.scss'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { db } from './utils/db'
 import { Container } from './components/Container'
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
@@ -23,6 +24,7 @@ import DesignServicesIcon from '@mui/icons-material/DesignServices'
 import { LearnedWordStatsPage } from './pages/learnedWordsStats'
 import AnalyticsIcon from '@mui/icons-material/Analytics'
 import { Card } from './components/Card'
+import { Select } from './components/Select'
 
 const mainPages = [
     {
@@ -59,17 +61,21 @@ const mainPages = [
 
 function App() {
     const [page, setPage] = useState(mainPages[0].component)
-    const { collection } = useAppContext()
+    const { collection, voices } = useAppContext()
 
     const [newCollection, setNewCollection] = useState('')
+    const [newNative, setNewNative] = useState('')
+    const [newTranslation, setNewTranslation] = useState('')
 
     const createCollection = () => {
-        db.collections.add({ name: newCollection, active: true })
+        if (newCollection.length < 1) return
+        db.collections.add({
+            name: newCollection,
+            active: true,
+            nativeLang: newNative,
+            translationLang: newTranslation,
+        })
     }
-
-    useEffect(() => {
-        window.speechSynthesis.getVoices()
-    }, [])
 
     if (!collection)
         return (
@@ -83,6 +89,34 @@ function App() {
                             value={newCollection}
                             onChange={(e) => setNewCollection(e.target.value)}
                         />
+                        <Select
+                            label="Choose native language"
+                            value={newNative}
+                            onChange={(e) =>
+                                setNewNative(e.target.value as string)
+                            }
+                            fullWidth
+                        >
+                            {voices.map((voice, i) => (
+                                <MenuItem value={voice.voiceURI} key={i}>
+                                    {voice.name} ({voice.lang})
+                                </MenuItem>
+                            ))}
+                        </Select>
+                        <Select
+                            label="Choose translation language"
+                            value={newTranslation}
+                            onChange={(e) =>
+                                setNewTranslation(e.target.value as string)
+                            }
+                            fullWidth
+                        >
+                            {voices.map((voice, i) => (
+                                <MenuItem value={voice.voiceURI} key={i}>
+                                    {voice.name} ({voice.lang})
+                                </MenuItem>
+                            ))}
+                        </Select>
                         <Button onClick={createCollection}>save</Button>
                     </CardContent>
                 </Card>
@@ -94,7 +128,12 @@ function App() {
             menu={
                 <>
                     {mainPages.map((page) => (
-                        <Tooltip title={page.name} placement="right" arrow>
+                        <Tooltip
+                            key={page.name}
+                            title={page.name}
+                            placement="right"
+                            arrow
+                        >
                             <IconButton
                                 key={page.name}
                                 onClick={() => setPage(page.component)}

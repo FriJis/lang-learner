@@ -202,7 +202,7 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
                     style={{ width: `${progress * 100}%`, backgroundColor: bg }}
                 />
                 <div className={styles.word}>
-                    {nativeLang?.key && (
+                    {nativeLang?.voiceURI && (
                         <IconButton onClick={() => sayNative(word.native)}>
                             <PlayCircleIcon />
                         </IconButton>
@@ -217,7 +217,7 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
                 <div className={styles.word}>
                     {showTranslation ? (
                         <>
-                            {translationLang?.key && (
+                            {translationLang?.voiceURI && (
                                 <IconButton
                                     onClick={() =>
                                         sayTranslation(word.translation)
