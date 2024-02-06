@@ -5,6 +5,7 @@ import { lsConf } from '../conf'
 import { StatisticsType } from '../types/statistics'
 import { Word } from '../types/word'
 import { db, getCollection } from '../utils/db'
+import { minMax } from '../utils'
 
 export function useUpdateProgress(word?: Word | null) {
     const [successOffset] = useLocalStorageState(lsConf.success_offset.name, {
@@ -15,18 +16,21 @@ export function useUpdateProgress(word?: Word | null) {
     })
 
     const fail = useCallback(() => {
-        if (!word) return null
-        const progress = word.progress * mistakeOffset
-        return db.words.update(word.id || 0, {
-            progress: progress < 0 ? 0 : progress,
+        if (!word?.id) return null
+        const progress = minMax(word.progress * mistakeOffset, 0, 1)
+        return db.words.update(word.id, {
+            progress,
         })
     }, [word, mistakeOffset])
 
     const success = useCallback(
         async (offset?: number) => {
             if (!word) return null
-            const progress = word.progress + successOffset * (offset || 1)
-            const nextProgress = progress > 1 ? 1 : progress
+            const progress = minMax(
+                word.progress + successOffset * (offset || 1),
+                0,
+                1
+            )
 
             await db.transaction(
                 'rw',
@@ -34,7 +38,7 @@ export function useUpdateProgress(word?: Word | null) {
                 db.statistics,
                 db.collections,
                 async () => {
-                    if (nextProgress >= 1) {
+                    if (progress >= 1) {
                         const collection = await getCollection()
                         const collectionId = collection?.id
                         if (!collectionId)
@@ -48,7 +52,7 @@ export function useUpdateProgress(word?: Word | null) {
                         })
                     }
                     await db.words.update(word.id || 0, {
-                        progress: nextProgress,
+                        progress,
                     })
                 }
             )

@@ -11,7 +11,7 @@ import { Nothing } from '../components/Nothing'
 import { WordEditor } from '../components/WordEditor'
 import { useLangs } from '../hooks/useLangs'
 import { Word } from '../types/word'
-import { findWords, sayNative, sayTranslation } from '../utils'
+import { findWords, minMax, sayNative, sayTranslation } from '../utils'
 import { db, getCollection } from '../utils/db'
 import { swapWord } from '../utils/db'
 import { useAppContext } from '../ctx/app'
@@ -182,9 +182,7 @@ const WordItem: FC<{ word: Word; showTranslation?: boolean }> = ({
     }, [word])
 
     const progress = useMemo(() => {
-        if (word.progress <= 0) return 0
-        if (word.progress >= 1) return 1
-        return word.progress
+        return minMax(word.progress, 0, 1)
     }, [word])
 
     return (

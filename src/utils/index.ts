@@ -143,3 +143,9 @@ export const copy = (text: string) => {
     document.execCommand('copy')
     i.remove()
 }
+
+export const minMax = (value: number, min: number, max: number) => {
+    if (value <= min) return min
+    if (value >= max) return max
+    return value
+}
