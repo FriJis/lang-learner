@@ -6,7 +6,14 @@ import {
     Snackbar,
     Typography,
 } from '@mui/material'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+    ChangeEvent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react'
 import { Word } from '../../types/word'
 import { getRandomValueFromArray, sayNative, sayTranslation } from '../../utils'
 import { composeWords } from '../../utils/db'
@@ -25,13 +32,19 @@ export const WriteComponent = () => {
 
     const [word, setWord] = useState<Word | null>(null)
     const [result, setResult] = useState('')
-    const [helper, setHelper] = useState('')
+    const [helperIndex, setHelperIndex] = useState(0)
+
     const [showPrev, setShowPrev] = useState(false)
     const [prev, setPrev] = useState<Word | null>(null)
 
     const [learnFirst] = useLS(lsConf.learn_first)
 
     const inputRef = useRef<HTMLInputElement>(null)
+
+    const helper = useMemo(
+        () => word?.translation.slice(0, helperIndex),
+        [helperIndex, word]
+    )
 
     const generate = useCallback(async () => {
         const words = await composeWords({
@@ -41,38 +54,44 @@ export const WriteComponent = () => {
         const word = getRandomValueFromArray(words)
         if (!word) return
         setResult('')
-        setHelper('')
+        setHelperIndex(0)
         setWord(word)
     }, [learnFirst, prev])
 
     const updater = useUpdateProgress(word)
 
-    const compare = useCallback(async () => {
-        if (!result) return
+    const compare = async (result: string) => {
         if (!word) return
         const compared = compareTwoStrings(word.translation || '', result)
-        const hintRatio = helper.length / word.translation.length
+        const hintRatio = 1 - helperIndex
 
-        await updater?.success(compared - hintRatio * 2)
+        if (hintRatio >= 1) {
+            await updater.success(compared)
+        } else if (hintRatio <= -1) {
+            await updater.fail()
+        }
 
         setPrev(word)
         sayNative(word.native)
         sayTranslation(word.translation)
-    }, [result, word, updater, helper])
+    }
 
     const help = useCallback(() => {
         if (!word) return
-        const nextIndex = helper.length + 1
-        const nextHint = word.translation.slice(0, nextIndex)
-        inputRef.current?.click()
-        if (helper === word.translation) {
-            updater.fail()
-            sayNative(word.native)
-            sayTranslation(word.translation)
-            return setPrev(word)
-        }
-        setHelper(nextHint)
-    }, [helper, word, inputRef, updater])
+        setHelperIndex((currentIndex) => {
+            const nextIndex = currentIndex + 1
+            inputRef.current?.click()
+
+            if (nextIndex >= word.translation.length - 1) {
+                updater.fail()
+                sayNative(word.native)
+                sayTranslation(word.translation)
+                setPrev(word)
+                return 0
+            }
+            return nextIndex
+        })
+    }, [word, inputRef, updater])
 
     const idk = useCallback(() => {
         if (!word) return
@@ -83,6 +102,14 @@ export const WriteComponent = () => {
         generate()
         inputRef.current?.click()
     }, [word, generate, updater, inputRef])
+
+    const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const { value } = e.target
+        if (value === word?.translation) {
+            return compare(value)
+        }
+        setResult(e.target.value)
+    }
 
     useEffect(() => {
         if (!prev) return
@@ -125,22 +152,22 @@ export const WriteComponent = () => {
                 }`}
                 autoHideDuration={5000}
             />
-            <Form onSubmit={compare}>
+            <Form onSubmit={() => compare(result)}>
                 <Card>
                     <CardContent>
                         <Typography>
                             {word?.native} <Info word={word}></Info>
                         </Typography>
-                        {helper.length > 0 && (
+                        {helperIndex > 0 && (
                             <Typography color={'gray'}>
-                                Hint: {helper}
+                                Hint: {helper || ''}
                             </Typography>
                         )}
                         <Input
                             ref={inputRef}
                             value={result}
                             placeholder="Translation..."
-                            onChange={(e) => setResult(e.target.value)}
+                            onChange={onChange}
                             fullWidth
                         ></Input>
                     </CardContent>

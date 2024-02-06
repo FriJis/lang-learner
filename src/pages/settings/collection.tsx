@@ -23,6 +23,7 @@ import {
     asyncMap,
     download,
     jsonParse,
+    minMax,
     normalize,
     readTextFromFile,
 } from '../../utils'
@@ -108,7 +109,7 @@ export const CollectionSettings = () => {
                     if (!existing)
                         return db.words.add({
                             ...data,
-                            progress: progress || 0,
+                            progress: minMax(progress || 0, 0, 1),
                             collectionId: collection.id || 0,
                         })
                     return db.words.update(existing, {
