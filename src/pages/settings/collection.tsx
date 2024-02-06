@@ -5,8 +5,6 @@ import {
     CardContent,
     CircularProgress,
     Dialog,
-    DialogActions,
-    DialogContent,
     DialogTitle,
     Grid,
     IconButton,
@@ -19,15 +17,8 @@ import _ from 'lodash'
 import { ChangeEvent, FC, useCallback, useState } from 'react'
 import { Collection } from '../../types/collection'
 import { ExportedWord } from '../../types/word'
-import {
-    asyncMap,
-    download,
-    jsonParse,
-    minMax,
-    normalize,
-    readTextFromFile,
-} from '../../utils'
-import { db, getWords } from '../../utils/db'
+import { download, jsonParse, readTextFromFile } from '../../utils'
+import { db } from '../../utils/db'
 import { Half } from '../../components/Half'
 import { useAppContext } from '../../ctx/app'
 import SaveIcon from '@mui/icons-material/Save'
@@ -35,14 +26,13 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Card, Cards } from '../../components/Card'
 import papaparse from 'papaparse'
-import styles from './collection.module.scss'
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import { Select } from '../../components/Select'
+import { WordImporter } from '../../components/WordImporter'
 
 export const CollectionSettings = () => {
     const [err, setErr] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [askImport, setAskImport] = useState<ExportedWord[]>([])
+    const [wordsToImport, setWordsToImport] = useState<ExportedWord[]>([])
     const [showAskImport, setShowAskImport] = useState(false)
 
     const collections = useLiveQuery(() => db.collections.toArray())
@@ -80,51 +70,6 @@ export const CollectionSettings = () => {
         )
     }
 
-    const parse = async (exported: ExportedWord[]) => {
-        if (!collection) return
-        const words = await getWords()
-
-        const mapWords = new Map(
-            words.map((w) => [
-                `${normalize(w.native)}-${normalize(w.translation)}`,
-                w,
-            ])
-        )
-
-        db.transaction('rw', db.words, async () => {
-            await asyncMap(
-                exported,
-                ([native, translation, progress, info]) => {
-                    if (native.length <= 0) throw new Error()
-                    if (translation.length <= 0) throw new Error()
-
-                    const existing = mapWords.get(
-                        `${normalize(native)}-${normalize(translation)}`
-                    )
-                    const data = {
-                        translation: normalize(translation),
-                        native: normalize(native),
-                        info: info || '',
-                    }
-                    if (!existing)
-                        return db.words.add({
-                            ...data,
-                            progress: minMax(progress || 0, 0, 1),
-                            collectionId: collection.id || 0,
-                        })
-                    return db.words.update(existing, {
-                        ...data,
-                        progress: _.isUndefined(progress)
-                            ? existing.progress
-                            : progress,
-                    })
-                }
-            )
-        }).catch(() => {
-            throw new Error()
-        })
-    }
-
     const importWords = async (e: ChangeEvent<HTMLInputElement>) => {
         try {
             const [file] = Array.from(e.target.files || [])
@@ -133,7 +78,7 @@ export const CollectionSettings = () => {
             const words = jsonParse<ExportedWord[]>(json)
             if (!words) throw new Error()
             if (words.length === 0) return
-            setAskImport(words)
+            setWordsToImport(words)
             setShowAskImport(true)
         } catch (error) {
             console.error(error)
@@ -154,7 +99,7 @@ export const CollectionSettings = () => {
                 return [native, translation, undefined, undefined]
             })
             if (words.length === 0) return
-            setAskImport(words)
+            setWordsToImport(words)
             setShowAskImport(true)
         } catch (error) {
             console.error(error)
@@ -210,80 +155,18 @@ export const CollectionSettings = () => {
         setLoading(false)
     }
 
-    const confirmAskImport = async () => {
-        await parse(askImport)
-        setShowAskImport(false)
-    }
-
-    const reverseAskImportWord = (index: number) => {
-        setAskImport((old) => {
-            return old.map((data, i) => {
-                if (i !== index) return data
-                const [first, second, ...other] = data
-                return [second, first, ...other]
-            })
-        })
-    }
-
-    const reverseAskImportWords = () => {
-        setAskImport((old) =>
-            old.map(([first, second, ...other]) => [second, first, ...other])
-        )
-    }
-
     return (
         <Cards>
             <Dialog open={err} onClose={() => setErr(false)}>
                 <DialogTitle>Something is wrong</DialogTitle>
             </Dialog>
-            <Dialog
+            <WordImporter
                 open={showAskImport}
+                onChange={(values) => setWordsToImport(values)}
+                values={wordsToImport}
                 onClose={() => setShowAskImport(false)}
-            >
-                <DialogTitle>Confirm importing words</DialogTitle>
-                <DialogContent>
-                    <div className={styles.row}>
-                        <div className={styles.fill}>
-                            <Typography>
-                                <b>{nativeLang?.name}</b>
-                            </Typography>
-                        </div>
-                        <div className={styles.button}>
-                            <IconButton onClick={reverseAskImportWords}>
-                                <CompareArrowsIcon />
-                            </IconButton>
-                        </div>
-                        <div className={styles.fill}>
-                            <Typography>
-                                <b>{translationLang?.name}</b>
-                            </Typography>
-                        </div>
-                    </div>
-                    {askImport.map(([native, translation], i) => (
-                        <div className={styles.row} key={i}>
-                            <div className={styles.fill}>
-                                <Typography>{native}</Typography>
-                            </div>
-                            <div className={styles.button}>
-                                <IconButton
-                                    onClick={() => reverseAskImportWord(i)}
-                                >
-                                    <CompareArrowsIcon />
-                                </IconButton>
-                            </div>
-                            <div className={styles.fill}>
-                                <Typography>{translation}</Typography>
-                            </div>
-                        </div>
-                    ))}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setShowAskImport(false)}>
-                        cancel
-                    </Button>
-                    <Button onClick={confirmAskImport}>confirm</Button>
-                </DialogActions>
-            </Dialog>
+            />
+
             <Backdrop open={loading}>
                 <CircularProgress color="inherit" />
             </Backdrop>
