@@ -40,6 +40,15 @@ export const WordImporter: FC<{
         [words]
     )
 
+    const nativeSets = useMemo(
+        () => new Set(words?.map((word) => word.native)),
+        [words]
+    )
+    const translationSets = useMemo(
+        () => new Set(words?.map((word) => word.translation)),
+        [words]
+    )
+
     const parse = async (exported: ExportedWord[]) => {
         if (!collection) return
         const words = await getWords()
@@ -96,8 +105,6 @@ export const WordImporter: FC<{
 
         const [first, second, ...other] = value
 
-        // values[index] = [second, first, ...other]
-
         values.splice(index, 1, [second, first, ...other])
 
         onChange([...values])
@@ -150,7 +157,11 @@ export const WordImporter: FC<{
                                 })}
                                 key={i}
                             >
-                                <TableCell>
+                                <TableCell
+                                    className={clsx({
+                                        [styles.has]: nativeSets.has(native),
+                                    })}
+                                >
                                     <Typography>{native}</Typography>
                                 </TableCell>
                                 <TableCell>
@@ -161,7 +172,12 @@ export const WordImporter: FC<{
                                 <TableCell>
                                     <Typography>{translation}</Typography>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell
+                                    className={clsx({
+                                        [styles.has]:
+                                            translationSets.has(translation),
+                                    })}
+                                >
                                     <IconButton onClick={() => deleteWord(i)}>
                                         <CloseIcon />
                                     </IconButton>
