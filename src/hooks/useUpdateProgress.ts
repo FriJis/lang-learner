@@ -50,6 +50,11 @@ export function useUpdateProgress(word?: Word | null) {
                             metaValue: `${word.native} - ${word.translation}`,
                             type: StatisticsType.learnedWord,
                         })
+                        await db.words.update(word.id || 0, {
+                            progress,
+                            lastControllWork: moment().toISOString(),
+                        })
+                        return
                     }
                     await db.words.update(word.id || 0, {
                         progress,

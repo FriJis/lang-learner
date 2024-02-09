@@ -39,6 +39,10 @@ export const lsConf = {
         name: 'numbers_generator_max',
         def: 100,
     },
+    maxContinuouslyPassedTests: {
+        name: 'max_continuously_passed_tests',
+        def: 3,
+    },
 }
 
 export const colors = {

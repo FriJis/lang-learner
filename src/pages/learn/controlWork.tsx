@@ -23,6 +23,9 @@ export const ControlWorkComponent = () => {
 
     const [countWords] = useLS(lsConf.count_words)
     const [controlWorkTimer] = useLS(lsConf.control_work_timer)
+    const [maxContinuouslyPassedTests] = useLS(
+        lsConf.maxContinuouslyPassedTests
+    )
     const { collection } = useAppContext()
 
     const generate = useCallback(async () => {
@@ -49,6 +52,7 @@ export const ControlWorkComponent = () => {
         db.words.update(word, {
             progress: 0,
             lastControllWork: moment().toISOString(),
+            continuouslyPassedTests: 0,
         })
         setCheckedWords((o) => [...o, id])
     }
@@ -58,6 +62,7 @@ export const ControlWorkComponent = () => {
         if (!id) return
         db.words.update(word, {
             lastControllWork: moment().toISOString(),
+            continuouslyPassedTests: (word.continuouslyPassedTests || 0) + 1,
         })
         const collectionId = collection?.id
         if (!collectionId) throw new Error('collection is undefined')
@@ -87,12 +92,17 @@ export const ControlWorkComponent = () => {
                         controlWorkTimer
                     )
                         return false
+                    if (
+                        (word.continuouslyPassedTests || 0) >=
+                        maxContinuouslyPassedTests
+                    )
+                        return false
                     return true
                 })
             )
         }
         f()
-    }, [controlWorkTimer])
+    }, [controlWorkTimer, maxContinuouslyPassedTests])
 
     if (!ready) return null
 
