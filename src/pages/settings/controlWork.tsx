@@ -8,6 +8,9 @@ export const ControlWorkSettings = () => {
     const [controlWorkTimer, setControlWorkTimer] = useLS(
         lsConf.control_work_timer
     )
+    const [maxContinuouslyPassedTests, setMaxContinuouslyPassedTests] = useLS(
+        lsConf.maxContinuouslyPassedTests
+    )
 
     return (
         <Card>
@@ -24,6 +27,20 @@ export const ControlWorkSettings = () => {
                     value={controlWorkTimer}
                     onChange={(e, v) =>
                         setControlWorkTimer(_.isArray(v) ? v[0] : v)
+                    }
+                ></Slider>
+                <Typography>
+                    number of successful word tests in a row:{' '}
+                    {maxContinuouslyPassedTests}
+                </Typography>
+
+                <Slider
+                    min={1}
+                    max={20}
+                    step={1}
+                    value={maxContinuouslyPassedTests}
+                    onChange={(e, v) =>
+                        setMaxContinuouslyPassedTests(_.isArray(v) ? v[0] : v)
                     }
                 ></Slider>
             </CardContent>

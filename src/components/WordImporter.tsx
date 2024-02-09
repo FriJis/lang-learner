@@ -14,7 +14,6 @@ import {
 } from '@mui/material'
 import { FC, useMemo } from 'react'
 import styles from './WordImporter.module.scss'
-import { ExportedWord } from '../types/word'
 import { db, getWords } from '../utils/db'
 import { asyncMap, minMax, normalize } from '../utils'
 import _ from 'lodash'
@@ -23,13 +22,14 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import { useLiveQuery } from 'dexie-react-hooks'
 import clsx from 'clsx'
 import CloseIcon from '@mui/icons-material/Close'
+import { ExportedDataV1, ExportedWordV1 } from '../types/exportedData'
 
 export const WordImporter: FC<{
     open: boolean
     onClose: () => void
-    values: ExportedWord[]
-    onChange: (values: ExportedWord[]) => void
-}> = ({ open, onClose, values, onChange }) => {
+    value: ExportedDataV1
+    onChange: (value: ExportedDataV1) => void
+}> = ({ open, onClose, value, onChange }) => {
     const { collection, nativeLang, translationLang } = useAppContext()
 
     const words = useLiveQuery(() => getWords())
@@ -49,7 +49,7 @@ export const WordImporter: FC<{
         [words]
     )
 
-    const parse = async (exported: ExportedWord[]) => {
+    const parse = async () => {
         if (!collection) return
         const words = await getWords()
 
@@ -60,10 +60,10 @@ export const WordImporter: FC<{
             ])
         )
 
-        db.transaction('rw', db.words, async () => {
-            await asyncMap(
-                exported,
-                ([native, translation, progress, info]) => {
+        await db
+            .transaction('rw', db.words, async () => {
+                await asyncMap(value.words, (word) => {
+                    const { native, translation, progress } = word
                     if (native.length <= 0) throw new Error()
                     if (translation.length <= 0) throw new Error()
 
@@ -71,9 +71,9 @@ export const WordImporter: FC<{
                         `${normalize(native)}-${normalize(translation)}`
                     )
                     const data = {
+                        ...word,
                         translation: normalize(translation),
                         native: normalize(native),
-                        info: info || '',
                     }
                     if (!existing)
                         return db.words.add({
@@ -87,39 +87,45 @@ export const WordImporter: FC<{
                             ? existing.progress
                             : progress,
                     })
-                }
-            )
-        }).catch(() => {
-            throw new Error()
-        })
-    }
+                })
+            })
+            .catch(() => {
+                throw new Error('parse error')
+            })
 
-    const confirm = async () => {
-        await parse(values)
         onClose()
     }
 
     const reverse = (index: number) => {
-        const value = values[index]
-        if (!value) return null
+        const word = value.words[index]
+        if (!word) return null
 
-        const [first, second, ...other] = value
+        value.words.splice(index, 1, {
+            ...value,
+            native: word.translation,
+            translation: word.native,
+        })
 
-        values.splice(index, 1, [second, first, ...other])
-
-        onChange([...values])
+        onChange({
+            ...value,
+        })
     }
 
     const reverseAll = () => {
-        const reversed = values.map<ExportedWord>(
-            ([first, second, ...other]) => [second, first, ...other]
-        )
-        onChange(reversed)
+        const reversed = value.words.map<ExportedWordV1>((word) => ({
+            ...word,
+            native: word.translation,
+            translation: word.native,
+        }))
+        onChange({
+            ...value,
+            words: reversed,
+        })
     }
 
     const deleteWord = (index: number) => {
-        values.splice(index, 1)
-        onChange([...values])
+        value.words.splice(index, 1)
+        onChange({ ...value })
     }
 
     return (
@@ -148,21 +154,23 @@ export const WordImporter: FC<{
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {values.map(([native, translation], i) => (
+                        {value.words.map((word, i) => (
                             <TableRow
                                 className={clsx({
                                     [styles.has]: wordsSet.has(
-                                        `${native}-${translation}`
+                                        `${word.native}-${word.translation}`
                                     ),
                                 })}
                                 key={i}
                             >
                                 <TableCell
                                     className={clsx({
-                                        [styles.has]: nativeSets.has(native),
+                                        [styles.has]: nativeSets.has(
+                                            word.native
+                                        ),
                                     })}
                                 >
-                                    <Typography>{native}</Typography>
+                                    <Typography>{word.native}</Typography>
                                 </TableCell>
                                 <TableCell>
                                     <IconButton onClick={() => reverse(i)}>
@@ -170,12 +178,13 @@ export const WordImporter: FC<{
                                     </IconButton>
                                 </TableCell>
                                 <TableCell>
-                                    <Typography>{translation}</Typography>
+                                    <Typography>{word.translation}</Typography>
                                 </TableCell>
                                 <TableCell
                                     className={clsx({
-                                        [styles.has]:
-                                            translationSets.has(translation),
+                                        [styles.has]: translationSets.has(
+                                            word.translation
+                                        ),
                                     })}
                                 >
                                     <IconButton onClick={() => deleteWord(i)}>
@@ -189,7 +198,7 @@ export const WordImporter: FC<{
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>cancel</Button>
-                <Button onClick={confirm}>confirm</Button>
+                <Button onClick={parse}>confirm</Button>
             </DialogActions>
         </Dialog>
     )

@@ -44,6 +44,9 @@ export class MySubClassedDexie extends Dexie {
         this.version(6).stores({
             statistics: '++id, metaValue, collectionId, type, createdAt',
         })
+        this.version(7).stores({
+            words: '++id, collectionId, native, translation, progress, info, lastControllWork, continuouslyPassedTests',
+        })
     }
 }
 

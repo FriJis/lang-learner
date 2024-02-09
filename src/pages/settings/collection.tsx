@@ -16,7 +16,6 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
 import { ChangeEvent, FC, useCallback, useState } from 'react'
 import { Collection } from '../../types/collection'
-import { ExportedWord } from '../../types/word'
 import { download, jsonParse, readTextFromFile } from '../../utils'
 import { db } from '../../utils/db'
 import { Half } from '../../components/Half'
@@ -25,14 +24,22 @@ import SaveIcon from '@mui/icons-material/Save'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Card, Cards } from '../../components/Card'
-import papaparse from 'papaparse'
 import { Select } from '../../components/Select'
 import { WordImporter } from '../../components/WordImporter'
+import {
+    ExportedDataV1,
+    ExportedWordDeprecated,
+} from '../../types/exportedData'
+import {
+    mapDataExportWords,
+    mapDataGoogleTranslateV1,
+    mapDeprecatedDataV1,
+} from '../../utils/exportData'
 
 export const CollectionSettings = () => {
     const [err, setErr] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [wordsToImport, setWordsToImport] = useState<ExportedWord[]>([])
+    const [importData, setImportData] = useState<ExportedDataV1 | null>(null)
     const [showAskImport, setShowAskImport] = useState(false)
 
     const collections = useLiveQuery(() => db.collections.toArray())
@@ -54,17 +61,7 @@ export const CollectionSettings = () => {
         if (!collection) return
 
         download(
-            JSON.stringify(
-                words.map(
-                    (w) =>
-                        [
-                            w.native,
-                            w.translation,
-                            w.progress,
-                            w.info || '',
-                        ] as ExportedWord
-                )
-            ),
+            JSON.stringify(mapDataExportWords(words)),
             `${collection.name}_words.json`,
             'application/json'
         )
@@ -75,10 +72,17 @@ export const CollectionSettings = () => {
             const [file] = Array.from(e.target.files || [])
             if (!file) throw new Error()
             const json = await readTextFromFile(file)
-            const words = jsonParse<ExportedWord[]>(json)
-            if (!words) throw new Error()
-            if (words.length === 0) return
-            setWordsToImport(words)
+            const importedData = jsonParse<
+                ExportedWordDeprecated[] | ExportedDataV1
+            >(json)
+
+            if (_.isArray(importedData)) {
+                if (importedData.length === 0) return
+                setImportData(mapDeprecatedDataV1(importedData))
+            } else {
+                setImportData(importedData)
+            }
+
             setShowAskImport(true)
         } catch (error) {
             console.error(error)
@@ -89,17 +93,15 @@ export const CollectionSettings = () => {
     const importCSV = async (e: ChangeEvent<HTMLInputElement>) => {
         try {
             const [file] = Array.from(e.target.files || [])
+
             if (!file) throw new Error()
             const result = await readTextFromFile(file)
-            const csvString = papaparse.parse<string[]>(result, {
-                header: false,
-            })
-            const words: ExportedWord[] = csvString.data.map((row) => {
-                const [, , native, translation] = row
-                return [native, translation, undefined, undefined]
-            })
-            if (words.length === 0) return
-            setWordsToImport(words)
+
+            const importingCollection = mapDataGoogleTranslateV1(result)
+
+            if (importingCollection.words.length === 0) return
+
+            setImportData(importingCollection)
             setShowAskImport(true)
         } catch (error) {
             console.error(error)
@@ -160,12 +162,14 @@ export const CollectionSettings = () => {
             <Dialog open={err} onClose={() => setErr(false)}>
                 <DialogTitle>Something is wrong</DialogTitle>
             </Dialog>
-            <WordImporter
-                open={showAskImport}
-                onChange={(values) => setWordsToImport(values)}
-                values={wordsToImport}
-                onClose={() => setShowAskImport(false)}
-            />
+            {!!importData && (
+                <WordImporter
+                    open={showAskImport}
+                    onChange={(values) => setImportData(values)}
+                    value={importData}
+                    onClose={() => setShowAskImport(false)}
+                />
+            )}
 
             <Backdrop open={loading}>
                 <CircularProgress color="inherit" />
