@@ -1,9 +1,11 @@
 import {
     Button,
+    Checkbox,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
+    FormControlLabel,
     IconButton,
     Table,
     TableBody,
@@ -12,7 +14,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material'
-import { FC, useMemo } from 'react'
+import { FC, useMemo, useState } from 'react'
 import styles from './WordImporter.module.scss'
 import { db, getWords } from '../utils/db'
 import { asyncMap, minMax, normalize } from '../utils'
@@ -33,24 +35,33 @@ export const WordImporter: FC<{
     const { collection, nativeLang, translationLang } = useAppContext()
 
     const words = useLiveQuery(() => getWords())
+    const [importStatistics, setImportStatistics] = useState(false)
 
     const wordsSet = useMemo(
         () =>
-            new Set(words?.map((word) => `${word.native}-${word.translation}`)),
+            new Set(
+                words?.map(
+                    (word) =>
+                        `${normalize(word.native)}-${normalize(
+                            word.translation
+                        )}`
+                )
+            ),
         [words]
     )
 
     const nativeSets = useMemo(
-        () => new Set(words?.map((word) => word.native)),
+        () => new Set(words?.map((word) => normalize(word.native))),
         [words]
     )
     const translationSets = useMemo(
-        () => new Set(words?.map((word) => word.translation)),
+        () => new Set(words?.map((word) => normalize(word.translation))),
         [words]
     )
 
     const parse = async () => {
-        if (!collection) return
+        const collectionId = collection?.id
+        if (!collectionId) return
         const words = await getWords()
 
         const mapWords = new Map(
@@ -61,7 +72,7 @@ export const WordImporter: FC<{
         )
 
         await db
-            .transaction('rw', db.words, async () => {
+            .transaction('rw', db.words, db.statistics, async () => {
                 await asyncMap(value.words, (word) => {
                     const { native, translation, progress } = word
                     if (native.length <= 0) throw new Error()
@@ -79,7 +90,7 @@ export const WordImporter: FC<{
                         return db.words.add({
                             ...data,
                             progress: minMax(progress || 0, 0, 1),
-                            collectionId: collection.id || 0,
+                            collectionId: collectionId,
                         })
                     return db.words.update(existing, {
                         ...data,
@@ -88,6 +99,13 @@ export const WordImporter: FC<{
                             : progress,
                     })
                 })
+                if (!value.statistics) return
+                if (!importStatistics) return
+
+                await db.statistics.clear()
+                await db.statistics.bulkAdd(
+                    value.statistics.map((s) => ({ ...s, collectionId }))
+                )
             })
             .catch(() => {
                 throw new Error('parse error')
@@ -132,6 +150,17 @@ export const WordImporter: FC<{
         <Dialog open={open} onClose={onClose}>
             <DialogTitle>Confirm importing words</DialogTitle>
             <DialogContent>
+                {!!value.statistics && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                value={importStatistics}
+                                onChange={() => setImportStatistics((o) => !o)}
+                            />
+                        }
+                        label="Import new stats? The current one will be deleted"
+                    />
+                )}
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -158,7 +187,9 @@ export const WordImporter: FC<{
                             <TableRow
                                 className={clsx({
                                     [styles.has]: wordsSet.has(
-                                        `${word.native}-${word.translation}`
+                                        `${normalize(word.native)}-${normalize(
+                                            word.translation
+                                        )}`
                                     ),
                                 })}
                                 key={i}
@@ -166,7 +197,7 @@ export const WordImporter: FC<{
                                 <TableCell
                                     className={clsx({
                                         [styles.has]: nativeSets.has(
-                                            word.native
+                                            normalize(word.native)
                                         ),
                                     })}
                                 >
@@ -183,7 +214,7 @@ export const WordImporter: FC<{
                                 <TableCell
                                     className={clsx({
                                         [styles.has]: translationSets.has(
-                                            word.translation
+                                            normalize(word.translation)
                                         ),
                                     })}
                                 >

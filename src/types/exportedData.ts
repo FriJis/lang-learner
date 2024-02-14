@@ -1,3 +1,5 @@
+import { Statistics, StatisticsType } from './statistics'
+
 type native = string
 type translation = string
 type progress = number
@@ -19,7 +21,14 @@ export interface ExportedWordV1 {
     continuouslyPassedTests?: number
 }
 
+export interface ExportedStatisticsV1 {
+    metaValue?: string
+    type: StatisticsType
+    createdAt: string
+}
+
 export interface ExportedDataV1 {
     version: 1
     words: ExportedWordV1[]
+    statistics?: ExportedStatisticsV1[]
 }
