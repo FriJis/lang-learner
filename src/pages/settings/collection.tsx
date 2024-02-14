@@ -17,7 +17,7 @@ import _ from 'lodash'
 import { ChangeEvent, FC, useCallback, useState } from 'react'
 import { Collection } from '../../types/collection'
 import { download, jsonParse, readTextFromFile } from '../../utils'
-import { db } from '../../utils/db'
+import { db, getStatistics } from '../../utils/db'
 import { Half } from '../../components/Half'
 import { useAppContext } from '../../ctx/app'
 import SaveIcon from '@mui/icons-material/Save'
@@ -59,9 +59,10 @@ export const CollectionSettings = () => {
 
     const exportWords = async () => {
         if (!collection) return
+        const statistics = await getStatistics()
 
         download(
-            JSON.stringify(mapDataExportWords(words)),
+            JSON.stringify(mapDataExportWords({ words, statistics })),
             `${collection.name}_words.json`,
             'application/json'
         )

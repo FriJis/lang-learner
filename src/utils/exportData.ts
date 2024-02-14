@@ -5,6 +5,7 @@ import {
 } from '../types/exportedData'
 import papaparse from 'papaparse'
 import { Word } from '../types/word'
+import { Statistics } from '../types/statistics'
 
 export function mapDeprecatedDataV1(
     data: ExportedWordDeprecated[]
@@ -39,9 +40,18 @@ export function mapDataGoogleTranslateV1(csvString: string): ExportedDataV1 {
     }
 }
 
-export function mapDataExportWords(words: Word[]): ExportedDataV1 {
+export function mapDataExportWords(params: {
+    words: Word[]
+    statistics?: Statistics[]
+}): ExportedDataV1 {
     return {
         version: 1,
-        words: words.map(({ id, collectionId, ...other }) => ({ ...other })),
+        words: params.words.map(({ id, collectionId, ...other }) => ({
+            ...other,
+        })),
+        statistics:
+            params.statistics?.map(({ id, collectionId, ...other }) => ({
+                ...other,
+            })) || [],
     }
 }
