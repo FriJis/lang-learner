@@ -37,6 +37,7 @@ export function say(text: string, voiceURI?: string) {
     if (!voice) return
 
     message.voice = voice
+    message.lang = voice.lang
     message.text = text
     const conf = lsConf.speakRate
     message.rate = +(localStorage.getItem(conf.name) || conf.def)
