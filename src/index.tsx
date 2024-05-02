@@ -5,12 +5,15 @@ import reportWebVitals from './reportWebVitals'
 import './i18n/index'
 import { AppContextProvider } from './ctx/app'
 import './styles/global.scss'
+import { ErrorProvider } from './ctx/error.provider'
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
 root.render(
-    <AppContextProvider>
-        <App />
-    </AppContextProvider>
+    <ErrorProvider>
+        <AppContextProvider>
+            <App />
+        </AppContextProvider>
+    </ErrorProvider>
 )
 
 // If you want to start measuring performance in your app, pass a function

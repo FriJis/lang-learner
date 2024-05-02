@@ -4,8 +4,6 @@ import {
     CardActions,
     CardContent,
     CircularProgress,
-    Dialog,
-    DialogTitle,
     Link,
     TextField,
     Typography,
@@ -30,14 +28,15 @@ import {
 import { useLS } from '../../hooks/useLS'
 import { lsConf } from '../../conf'
 import { StoreAPI } from '../../utils/http'
+import { useErrorWrapper } from '../../ctx/error.hook'
 
 export const ExportImportSettings = () => {
-    const [err, setErr] = useState(false)
     const [loading, setLoading] = useState(false)
     const [importData, setImportData] = useState<ExportedDataV1 | null>(null)
     const [showAskImport, setShowAskImport] = useState(false)
     const [serverName, setServerName] = useLS(lsConf.serverName)
     const [serverPassword, setServerPassword] = useLS(lsConf.serverPassword)
+    const act = useErrorWrapper()
 
     const { collection, words } = useAppContext()
 
@@ -56,12 +55,13 @@ export const ExportImportSettings = () => {
         if (!collection) return
         setLoading(true)
         try {
-            const statistics = await getStatistics()
+            await act(async () => {
+                const statistics = await getStatistics()
 
-            const values = mapDataExportWords({ words, statistics })
-            StoreAPI.setValue(collection.name, values)
+                const values = mapDataExportWords({ words, statistics })
+                StoreAPI.setValue(collection.name, values)
+            })
         } catch (error) {
-            setErr(true)
             console.error(error)
         }
         setLoading(false)
@@ -70,21 +70,22 @@ export const ExportImportSettings = () => {
     const importFromServer = async () => {
         setLoading(true)
         try {
-            if (!collection) return
-            const { data } = await StoreAPI.getValue(collection.name)
-            setImportData(data)
-            setShowAskImport(true)
+            await act(async () => {
+                if (!collection) return
+                const { data } = await StoreAPI.getValue(collection.name)
+                setImportData(data)
+                setShowAskImport(true)
+            })
         } catch (error) {
             console.error(error)
-            setErr(true)
         }
         setLoading(false)
     }
 
     const importWords = async (e: ChangeEvent<HTMLInputElement>) => {
-        try {
+        await act(async () => {
             const [file] = Array.from(e.target.files || [])
-            if (!file) throw new Error()
+            if (!file) throw new Error('You should provide at least 1 file')
             const json = await readTextFromFile(file)
             const importedData = jsonParse<
                 ExportedWordDeprecated[] | ExportedDataV1
@@ -98,17 +99,14 @@ export const ExportImportSettings = () => {
             }
 
             setShowAskImport(true)
-        } catch (error) {
-            console.error(error)
-            setErr(true)
-        }
+        })
     }
 
     const importCSV = async (e: ChangeEvent<HTMLInputElement>) => {
-        try {
+        await act(async () => {
             const [file] = Array.from(e.target.files || [])
 
-            if (!file) throw new Error()
+            if (!file) throw new Error('You should provide at least 1 file')
             const result = await readTextFromFile(file)
 
             const importingCollection = mapDataGoogleTranslateV1(result)
@@ -117,17 +115,11 @@ export const ExportImportSettings = () => {
 
             setImportData(importingCollection)
             setShowAskImport(true)
-        } catch (error) {
-            console.error(error)
-            setErr(true)
-        }
+        })
     }
 
     return (
         <>
-            <Dialog open={err} onClose={() => setErr(false)}>
-                <DialogTitle>Something is wrong</DialogTitle>
-            </Dialog>
             {!!importData && (
                 <WordImporter
                     open={showAskImport}

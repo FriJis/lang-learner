@@ -28,7 +28,6 @@ import { Select } from '../../components/Select'
 import { ExportImportSettings } from './exportImport'
 
 export const CollectionSettings = () => {
-    const [err, setErr] = useState(false)
     const [loading, setLoading] = useState(false)
 
     const collections = useLiveQuery(() => db.collections.toArray())
@@ -96,10 +95,6 @@ export const CollectionSettings = () => {
 
     return (
         <Cards>
-            <Dialog open={err} onClose={() => setErr(false)}>
-                <DialogTitle>Something is wrong</DialogTitle>
-            </Dialog>
-
             <Backdrop open={loading}>
                 <CircularProgress color="inherit" />
             </Backdrop>
