@@ -43,6 +43,14 @@ export const lsConf = {
         name: 'max_continuously_passed_tests',
         def: 3,
     },
+    serverName: {
+        name: 'server_name',
+        def: '',
+    },
+    serverPassword: {
+        name: 'server_password',
+        def: '',
+    },
 }
 
 export const colors = {
