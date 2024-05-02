@@ -47,6 +47,14 @@ export class MySubClassedDexie extends Dexie {
         this.version(7).stores({
             words: '++id, collectionId, native, translation, progress, info, lastControllWork, continuouslyPassedTests',
         })
+        this.version(7.1).upgrade(async (tx) => {
+            await tx
+                .table('words')
+                .toCollection()
+                .modify((word) => {
+                    delete word.words
+                })
+        })
     }
 }
 

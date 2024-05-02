@@ -24,16 +24,12 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Card, Cards } from '../../components/Card'
 import { Select } from '../../components/Select'
-import { WordImporter } from '../../components/WordImporter'
-import { ExportedDataV1 } from '../../types/exportedData'
 
 import { ExportImportSettings } from './exportImport'
 
 export const CollectionSettings = () => {
     const [err, setErr] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [importData, setImportData] = useState<ExportedDataV1 | null>(null)
-    const [showAskImport, setShowAskImport] = useState(false)
 
     const collections = useLiveQuery(() => db.collections.toArray())
     const {
@@ -103,14 +99,6 @@ export const CollectionSettings = () => {
             <Dialog open={err} onClose={() => setErr(false)}>
                 <DialogTitle>Something is wrong</DialogTitle>
             </Dialog>
-            {!!importData && (
-                <WordImporter
-                    open={showAskImport}
-                    onChange={(values) => setImportData(values)}
-                    value={importData}
-                    onClose={() => setShowAskImport(false)}
-                />
-            )}
 
             <Backdrop open={loading}>
                 <CircularProgress color="inherit" />
