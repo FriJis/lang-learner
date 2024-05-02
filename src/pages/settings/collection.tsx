@@ -14,10 +14,9 @@ import {
 } from '@mui/material'
 import { useLiveQuery } from 'dexie-react-hooks'
 import _ from 'lodash'
-import { ChangeEvent, FC, useCallback, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import { Collection } from '../../types/collection'
-import { download, jsonParse, readTextFromFile } from '../../utils'
-import { db, getStatistics } from '../../utils/db'
+import { db } from '../../utils/db'
 import { Half } from '../../components/Half'
 import { useAppContext } from '../../ctx/app'
 import SaveIcon from '@mui/icons-material/Save'
@@ -26,15 +25,9 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { Card, Cards } from '../../components/Card'
 import { Select } from '../../components/Select'
 import { WordImporter } from '../../components/WordImporter'
-import {
-    ExportedDataV1,
-    ExportedWordDeprecated,
-} from '../../types/exportedData'
-import {
-    mapDataExportWords,
-    mapDataGoogleTranslateV1,
-    mapDeprecatedDataV1,
-} from '../../utils/exportData'
+import { ExportedDataV1 } from '../../types/exportedData'
+
+import { ExportImportSettings } from './exportImport'
 
 export const CollectionSettings = () => {
     const [err, setErr] = useState(false)
@@ -55,59 +48,6 @@ export const CollectionSettings = () => {
     const setLang = (type: 'nativeLang' | 'translationLang', lang: string) => {
         if (!collection) return
         db.collections.update(collection, { [type]: lang })
-    }
-
-    const exportWords = async () => {
-        if (!collection) return
-        const statistics = await getStatistics()
-
-        download(
-            JSON.stringify(mapDataExportWords({ words, statistics })),
-            `${collection.name}_words.json`,
-            'application/json'
-        )
-    }
-
-    const importWords = async (e: ChangeEvent<HTMLInputElement>) => {
-        try {
-            const [file] = Array.from(e.target.files || [])
-            if (!file) throw new Error()
-            const json = await readTextFromFile(file)
-            const importedData = jsonParse<
-                ExportedWordDeprecated[] | ExportedDataV1
-            >(json)
-
-            if (_.isArray(importedData)) {
-                if (importedData.length === 0) return
-                setImportData(mapDeprecatedDataV1(importedData))
-            } else {
-                setImportData(importedData)
-            }
-
-            setShowAskImport(true)
-        } catch (error) {
-            console.error(error)
-            setErr(true)
-        }
-    }
-
-    const importCSV = async (e: ChangeEvent<HTMLInputElement>) => {
-        try {
-            const [file] = Array.from(e.target.files || [])
-
-            if (!file) throw new Error()
-            const result = await readTextFromFile(file)
-
-            const importingCollection = mapDataGoogleTranslateV1(result)
-
-            if (importingCollection.words.length === 0) return
-
-            setImportData(importingCollection)
-            setShowAskImport(true)
-        } catch (error) {
-            console.error(error)
-            setErr(true)
-        }
     }
 
     const deleteWords = async () => {
@@ -186,8 +126,6 @@ export const CollectionSettings = () => {
                     ))}
                     <CollectionSetting></CollectionSetting>
                 </CardContent>
-            </Card>
-            <Card>
                 <CardContent>
                     <Half
                         left={
@@ -229,39 +167,9 @@ export const CollectionSettings = () => {
                             </Select>
                         }
                     ></Half>
-                    <Half
-                        left={
-                            <Button variant="contained" onClick={exportWords}>
-                                Export collection
-                            </Button>
-                        }
-                        right={
-                            <>
-                                <Button component="label">
-                                    Import into current collection
-                                    <input
-                                        onChange={importWords}
-                                        hidden
-                                        accept=".json"
-                                        multiple
-                                        type="file"
-                                    />
-                                </Button>
-                                <Button component="label">
-                                    Import CSV from google translate
-                                    <input
-                                        onChange={importCSV}
-                                        hidden
-                                        accept=".csv"
-                                        multiple
-                                        type="file"
-                                    />
-                                </Button>
-                            </>
-                        }
-                    ></Half>
                 </CardContent>
             </Card>
+            <ExportImportSettings />
             <Card>
                 <CardContent>
                     <Typography variant="h4">Operations with words</Typography>
