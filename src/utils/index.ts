@@ -6,6 +6,7 @@ import { lsConf } from '../conf'
 import { Statistics, StatisticsType } from '../types/statistics'
 import { Word } from '../types/word'
 import { getCollection } from './db'
+import { ExportedWordV1 } from '../types/exportedData'
 
 export function getRandomValueFromArray<T>(arr: T[]): T {
     return arr[_.random(0, arr.length - 1)]
@@ -58,6 +59,27 @@ export const badRegEx = /\(|\)|\[|\\|\]|\/|\?|\=|\+|\=|\||\.|\,|\!|\@|\#|[0-9]/g
 
 export const normalize = (text: string) =>
     text.trim().toLocaleLowerCase().replace(badRegEx, '')
+
+export const normalizeWord = <T extends Word | ExportedWordV1>(word: T) => {
+    const keys: (keyof Word)[] = [
+        'collectionId',
+        'continuouslyPassedTests',
+        'id',
+        'info',
+        'lastControllWork',
+        'translation',
+        'progress',
+        'native',
+    ]
+
+    const clearedWord = _.pick(word, keys)
+
+    return {
+        ...clearedWord,
+        native: normalize(clearedWord.native || ''),
+        translation: normalize(clearedWord.translation || ''),
+    }
+}
 
 export function download(text: string, name: string, type: string) {
     const a = document.createElement('a')

@@ -176,7 +176,6 @@ const CollectionSetting: FC<{ collection?: Collection }> = ({ collection }) => {
     const { collection: activeCollection } = useAppContext()
 
     const update = useCallback(async () => {
-        setNewName('')
         if (!collection)
             return db.collections.add({
                 active: !activeCollection ? true : false,

@@ -59,7 +59,7 @@ export const ExportImportSettings = () => {
                 const statistics = await getStatistics()
 
                 const values = mapDataExportWords({ words, statistics })
-                StoreAPI.setValue(collection.name, values)
+                await StoreAPI.setValue(collection.name, values)
             })
         } catch (error) {
             console.error(error)

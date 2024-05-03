@@ -6,6 +6,8 @@ import {
 import papaparse from 'papaparse'
 import { Word } from '../types/word'
 import { Statistics } from '../types/statistics'
+import { normalizeWord } from '.'
+import _ from 'lodash'
 
 export function mapDeprecatedDataV1(
     data: ExportedWordDeprecated[]
@@ -46,12 +48,13 @@ export function mapDataExportWords(params: {
 }): ExportedDataV1 {
     return {
         version: 1,
-        words: params.words.map(({ id, collectionId, ...other }) => ({
-            ...other,
-        })),
+        words: params.words.map((word) => {
+            const normalized = normalizeWord(word)
+            return _.omit(normalized, ['collectionId', 'id'])
+        }),
         statistics:
-            params.statistics?.map(({ id, collectionId, ...other }) => ({
-                ...other,
-            })) || [],
+            params.statistics?.map((stat) => {
+                return _.omit(stat, ['collectionId', 'id'])
+            }) || [],
     }
 }

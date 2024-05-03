@@ -17,7 +17,7 @@ import {
 import { FC, useMemo, useState } from 'react'
 import styles from './WordImporter.module.scss'
 import { db, getWords } from '../utils/db'
-import { asyncMap, minMax, normalize } from '../utils'
+import { minMax, normalize, normalizeWord } from '../utils'
 import _ from 'lodash'
 import { useAppContext } from '../ctx/app'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
@@ -73,32 +73,35 @@ export const WordImporter: FC<{
 
         await db
             .transaction('rw', db.words, db.statistics, async () => {
-                await asyncMap(value.words, (word) => {
-                    const { native, translation, progress } = word
-                    if (native.length <= 0) throw new Error()
-                    if (translation.length <= 0) throw new Error()
+                await Promise.all(
+                    value.words.map(async (word) => {
+                        const data = normalizeWord(word)
 
-                    const existing = mapWords.get(
-                        `${normalize(native)}-${normalize(translation)}`
-                    )
-                    const data = {
-                        ...word,
-                        translation: normalize(translation),
-                        native: normalize(native),
-                    }
-                    if (!existing)
-                        return db.words.add({
+                        const { native, translation, progress } = data
+
+                        if (native.length <= 0)
+                            throw new Error('Native is empty')
+                        if (translation.length <= 0)
+                            throw new Error('Translation is empty')
+
+                        const existing = mapWords.get(
+                            `${native}-${translation}`
+                        )
+                        if (!existing)
+                            return db.words.add({
+                                ...data,
+                                progress: minMax(progress || 0, 0, 1),
+                                collectionId: collectionId,
+                            })
+                        return db.words.update(existing, {
                             ...data,
-                            progress: minMax(progress || 0, 0, 1),
-                            collectionId: collectionId,
+                            progress: _.isUndefined(progress)
+                                ? existing.progress
+                                : progress,
                         })
-                    return db.words.update(existing, {
-                        ...data,
-                        progress: _.isUndefined(progress)
-                            ? existing.progress
-                            : progress,
                     })
-                })
+                )
+
                 if (!value.statistics) return
                 if (!importStatistics) return
 

@@ -1,6 +1,6 @@
 import Dexie, { Table } from 'dexie'
 import _ from 'lodash'
-import { normalize } from '.'
+import { normalizeWord } from '.'
 import { Collection } from '../types/collection'
 import { Statistics } from '../types/statistics'
 import { Word } from '../types/word'
@@ -61,10 +61,11 @@ export class MySubClassedDexie extends Dexie {
 export const db = new MySubClassedDexie()
 
 export async function swapWord(word: Word) {
+    const normalized = normalizeWord(word)
     const newVal = {
-        ...word,
-        native: normalize(word.translation),
-        translation: normalize(word.native),
+        ...normalized,
+        native: normalized.translation,
+        translation: normalized.native,
     }
     await db.words.update(word, newVal)
     return newVal
