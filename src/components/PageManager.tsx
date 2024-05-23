@@ -15,7 +15,12 @@ export const PageManager: FC<{ pages: PageManagerPage[] }> = ({ pages }) => {
 
     return (
         <div className={styles.container}>
-            <Tabs value={current} onChange={(e, v) => setCurrent(v)}>
+            <Tabs
+                scrollButtons="auto"
+                variant="scrollable"
+                value={current}
+                onChange={(e, v) => setCurrent(v)}
+            >
                 {pages.map((page) => (
                     <Tab
                         key={page.value}
